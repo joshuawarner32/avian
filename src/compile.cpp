@@ -15,6 +15,8 @@
 #include "avian/target.h"
 #include "avian/arch.h"
 
+#include <avian/system/ffi.h>
+
 #include <avian/codegen/assembler.h>
 #include <avian/codegen/architecture.h>
 #include <avian/codegen/compiler.h>
@@ -7426,13 +7428,12 @@ invokeNativeSlow(MyThread* t, object method, void* function)
     t->checkpoint->noThrow = true;
     THREAD_RESOURCE(t, bool, noThrow, t->checkpoint->noThrow = noThrow);
 
-    result = t->m->system->call
-      (function,
-       RUNTIME_ARRAY_BODY(args),
-       RUNTIME_ARRAY_BODY(types),
-       count,
-       footprint * BytesPerWord,
-       returnType);
+    result = ffi::call(function,
+                       RUNTIME_ARRAY_BODY(args),
+                       RUNTIME_ARRAY_BODY(types),
+                       count,
+                       footprint * BytesPerWord,
+                       returnType);
   }
 
   if (methodFlags(t, method) & ACC_SYNCHRONIZED) {

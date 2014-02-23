@@ -1116,6 +1116,7 @@ vm-depends := $(generated-code) \
 vm-sources = \
 	$(src)/system/$(system).cpp \
 	$(src)/system/$(system)/signal.cpp \
+	$(src)/system/ffi.cpp \
 	$(src)/finder.cpp \
 	$(src)/machine.cpp \
 	$(src)/util.cpp \
