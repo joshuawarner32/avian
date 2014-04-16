@@ -5,4 +5,4 @@ env:
 script: ./test/ci.sh
 after_success:
 - make javadoc
-- .utility/push-javadoc-to-gh-pages.sh
+- script/push-javadoc-to-gh-pages.sh

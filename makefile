@@ -104,7 +104,9 @@ endif
 
 library-path = $(library-path-variable)=$(build)
 
-
+ifeq ($(JAVA_HOME),)
+	JAVA_HOME = $(shell script/find-java-home.sh)
+endif
 
 ifneq ($(openjdk),)
 	openjdk-arch = $(arch)
