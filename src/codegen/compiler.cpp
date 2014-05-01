@@ -2458,7 +2458,7 @@ class MyCompiler: public Compiler {
 
     unsigned footprint = 0;
     unsigned size = TargetBytesPerWord;
-    RUNTIME_ARRAY(Value*, arguments, argumentCount);
+    RUNTIME_ARRAY(ir::Value*, arguments, argumentCount);
     int index = 0;
     for (unsigned i = 0; i < argumentCount; ++i) {
       Value* o = va_arg(a, Value*);
@@ -2482,20 +2482,23 @@ class MyCompiler: public Compiler {
 
     Stack* argumentStack = c.stack;
     for (int i = index - 1; i >= 0; --i) {
-      argumentStack = compiler::stack
-        (&c, RUNTIME_ARRAY_BODY(arguments)[i], argumentStack);
+      argumentStack = compiler::stack(
+          &c,
+          static_cast<Value*>(RUNTIME_ARRAY_BODY(arguments)[i]),
+          argumentStack);
     }
 
     Value* result = value(&c, resultType);
     appendCall(&c,
                static_cast<Value*>(address),
+               ir::NativeCallingConvention,
                flags,
                traceHandler,
                result,
                resultType.size(),
                argumentStack,
                index,
-               util::Slice<ir::Value*>(0, 0));
+               util::Slice<ir::Value*>(RUNTIME_ARRAY_BODY(arguments), index));
 
     return result;
   }
@@ -2509,6 +2512,7 @@ class MyCompiler: public Compiler {
     Value* result = value(&c, resultType);
     appendCall(&c,
                static_cast<Value*>(address),
+               ir::AvianCallingConvention,
                flags,
                traceHandler,
                result,
