@@ -1214,9 +1214,25 @@ storeLocal(Context* c, unsigned footprint, Value* v, unsigned index, bool copy)
   return v;
 }
 
-Value*
-loadLocal(Context* c, unsigned footprint, unsigned index)
+unsigned typeFootprint(ir::Type type)
 {
+  // TODO: this function is very Java-specific in nature. Generalize.
+  switch (type.flavor()) {
+  case ir::Type::Float:
+  case ir::Type::Integer:
+    return type.size() / 4;
+  case ir::Type::Object:
+  case ir::Type::Address:
+  case ir::Type::Half:
+    return 1;
+  case ir::Type::Void:
+    return 0;
+  }
+}
+
+Value* loadLocal(Context* c, ir::Type type, unsigned index)
+{
+  unsigned footprint = typeFootprint(type);
   assert(c, index + footprint <= c->localFootprint);
 
   if (footprint > 1) {
@@ -2103,22 +2119,6 @@ class Client: public Assembler::Client {
   Context* c;
 };
 
-unsigned typeFootprint(ir::Type type)
-{
-  // TODO: this function is very Java-specific in nature. Generalize.
-  switch (type.flavor()) {
-  case ir::Type::Float:
-  case ir::Type::Integer:
-    return type.size() / 4;
-  case ir::Type::Object:
-  case ir::Type::Address:
-  case ir::Type::Half:
-    return 1;
-  case ir::Type::Void:
-    return 0;
-  }
-}
-
 class MyCompiler: public Compiler {
  public:
   MyCompiler(System* s, Assembler* assembler, Zone* zone,
@@ -2591,8 +2591,9 @@ class MyCompiler: public Compiler {
     compiler::storeLocal(&c, footprint, static_cast<Value*>(src), index, true);
   }
 
-  virtual Operand* loadLocal(unsigned footprint, unsigned index) {
-    return compiler::loadLocal(&c, footprint, index);
+  virtual Operand* loadLocal(ir::Type type, unsigned index)
+  {
+    return compiler::loadLocal(&c, type, index);
   }
 
   virtual void saveLocals() {
