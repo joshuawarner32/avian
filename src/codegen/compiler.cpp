@@ -2118,6 +2118,8 @@ unsigned typeFootprint(ir::Type type)
   case ir::Type::Integer:
     return type.size() / 4;
   case ir::Type::Object:
+  case ir::Type::Address:
+  case ir::Type::Half:
     return 1;
   }
 }
@@ -2272,7 +2274,7 @@ class MyCompiler: public Compiler {
       for (unsigned li = 0; li < c.localFootprint; ++li) {
         Local* local = c.locals + li;
         if (local->value == 0) {
-          initLocal(1, li, IntegerType); 
+          initLocal(1, li, ir::Type(ir::Type::Address, TargetBytesPerWord));
         }
       }
     }
@@ -2508,11 +2510,13 @@ class MyCompiler: public Compiler {
     appendReturn(&c, 0, 0);
   }
 
-  virtual void initLocal(unsigned footprint, unsigned index, OperandType type)
+  virtual void initLocal(unsigned footprint, unsigned index, ir::Type type)
   {
+    // TODO: enable the following assertion when possible:
+    // assert(&c, footprint == typeFootprint(type));
     assert(&c, index + footprint <= c.localFootprint);
 
-    Value* v = value(&c, valueType(&c, type));
+    Value* v = value(&c, type);
 
     if (footprint > 1) {
       assert(&c, footprint == 2);
@@ -2562,7 +2566,7 @@ class MyCompiler: public Compiler {
     for (int i = 0; i < static_cast<int>(c.localFootprint); ++i) {
       Local* local = e->locals() + i;
       if (local->value) {
-        initLocal(1, i, isGeneralValue(local->value) ? IntegerType : FloatType);
+        initLocal(1, i, local->value->type);
       }
     }
 
