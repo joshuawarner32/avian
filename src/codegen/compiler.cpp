@@ -2661,7 +2661,7 @@ class MyCompiler: public Compiler {
   }
 
   virtual void condJump(lir::TernaryOperation op,
-                        unsigned size,
+                        ir::Type type,
                         Operand* a,
                         Operand* b,
                         Operand* address)
@@ -2670,9 +2670,15 @@ class MyCompiler: public Compiler {
            (isGeneralBranch(op) and isGeneralValue(a) and isGeneralValue(b))or(
                isFloatBranch(op) and isFloatValue(a) and isFloatValue(b)));
 
+    // assert(&c, type.flavor() == static_cast<Value*>(a)->type.flavor());
+    // assert(&c, type.flavor() == static_cast<Value*>(b)->type.flavor());
+    assert(&c,
+           static_cast<Value*>(address)->type
+           == ir::Type(ir::Type::Integer, TargetBytesPerWord));
+
     appendBranch(&c,
                  op,
-                 size,
+                 type.size(),
                  static_cast<Value*>(a),
                  static_cast<Value*>(b),
                  static_cast<Value*>(address));
