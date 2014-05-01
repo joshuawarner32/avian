@@ -2630,6 +2630,8 @@ class MyCompiler: public Compiler {
                         ir::Type dstType)
   {
     assert(&c, dstType.size() >= TargetBytesPerWord);
+    assert(&c, srcType.flavor() == srcSelectType.flavor());
+    assert(&c, srcType.flavor() == dstType.flavor());
 
     Value* dst = value(&c, static_cast<Value*>(src)->type);
     appendMove(&c,
@@ -2648,6 +2650,8 @@ class MyCompiler: public Compiler {
                          ir::Type dstType)
   {
     assert(&c, dstType.size() >= TargetBytesPerWord);
+    assert(&c, srcType.flavor() == srcSelectType.flavor());
+    assert(&c, srcType.flavor() == dstType.flavor());
 
     Value* dst = value(&c, static_cast<Value*>(src)->type);
     appendMove(&c,
