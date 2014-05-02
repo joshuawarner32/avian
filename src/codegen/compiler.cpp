@@ -2497,7 +2497,6 @@ class MyCompiler: public Compiler {
                result,
                resultType.size(),
                argumentStack,
-               index,
                util::Slice<ir::Value*>(RUNTIME_ARRAY_BODY(arguments), index));
 
     return result;
@@ -2518,7 +2517,6 @@ class MyCompiler: public Compiler {
                result,
                resultType.size(),
                c.stack,
-               0,
                arguments);
     return result;
   }
