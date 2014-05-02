@@ -2500,6 +2500,7 @@ class MyCompiler: public Compiler {
                                Slice<ir::Value*> arguments)
   {
     Value* result = value(&c, resultType);
+    Stack* b UNUSED = c.stack;
     appendCall(&c,
                static_cast<Value*>(address),
                ir::AvianCallingConvention,
@@ -2508,6 +2509,7 @@ class MyCompiler: public Compiler {
                result,
                resultType.size(),
                arguments);
+    assert(&c, c.stack == b);
     return result;
   }
 
