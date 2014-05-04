@@ -2,7 +2,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include <avian/util/arena.h>
 #include <avian/util/string.h>
 #include <avian/util/list.h>
 #include <avian/util/fixed-allocator.h>

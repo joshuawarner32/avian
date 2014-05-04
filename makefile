@@ -1067,6 +1067,8 @@ asm-objects = $(foreach x,$(1),$(patsubst $(2)/%.$(asm-format),$(3)/%-asm.o,$(x)
 java-classes = $(foreach x,$(1),$(patsubst $(2)/%.java,$(3)/%.class,$(x)))
 noop-files = $(foreach x,$(1),$(patsubst $(2)/%,$(3)/%,$(x)))
 
+target-objects = $(foreach x,$(1),$(patsubst %,$(build)/objects/target/%.o,$(x)))
+
 generated-code = \
 	$(build)/type-enums.cpp \
 	$(build)/type-declarations.cpp \
@@ -1205,12 +1207,13 @@ lflags += $(extra-lflags)
 openjdk-cflags += $(extra-cflags)
 
 driver-source = $(src)/main.cpp
-driver-object = $(build)/main.o
+driver-object = $(call target-objects,$(driver-source))
+
 driver-dynamic-objects = \
 	$(build)/main-dynamic.o
 
 boot-source = $(src)/boot.cpp
-boot-object = $(build)/boot.o
+boot-object = $(call target-objects,$(boot-source))
 
 generator-depends := $(wildcard $(src)/*.h)
 generator-sources = \
@@ -1291,6 +1294,7 @@ converter = $(build)/binaryToObject/binaryToObject
 
 static-library = $(build)/$(static-prefix)$(name)$(static-suffix)
 executable = $(build)/$(name)${exe-suffix}
+kaleidoscope = $(build)/kaleidoscope${exe-suffix}
 dynamic-library = $(build)/$(so-prefix)jvm$(so-suffix)
 executable-dynamic = $(build)/$(name)-dynamic$(exe-suffix)
 
@@ -1354,7 +1358,7 @@ test-cpp-sources = $(wildcard $(test)/*.cpp)
 test-sources += $(test-support-sources)
 test-support-classes = $(call java-classes, $(test-support-sources),$(test),$(test-build))
 test-classes = $(call java-classes,$(test-sources),$(test),$(test-build))
-test-cpp-objects = $(call cpp-objects,$(test-cpp-sources),$(test),$(test-build))
+test-cpp-objects = $(call target-objects,$(test-cpp-sources))
 test-library = $(build)/$(so-prefix)test$(so-suffix)
 test-dep = $(test-build).dep
 
@@ -1426,6 +1430,9 @@ build: $(static-library) $(dynamic-library) $(lzma-loader) \
 	$(lzma-encoder) $(classpath-dep) $(test-dep) \
 	$(test-extra-dep) $(embed)
 endif
+
+.PHONY: kaleidoscope
+kaleidoscope: $(kaleidoscope)
 
 $(test-dep): $(classpath-dep)
 
@@ -1631,9 +1638,6 @@ endif
 $(unittest-objects): $(build)/unittest/%.o: $(unittest)/%.cpp $(vm-depends) $(unittest-depends)
 	$(compile-unittest-object)
 
-$(test-cpp-objects): $(test-build)/%.o: $(test)/%.cpp $(vm-depends)
-	$(compile-object)
-
 $(test-library): $(test-cpp-objects)
 	@echo "linking $(@)"
 ifdef ms_cl_compiler
@@ -1704,9 +1708,6 @@ $(bootimage-generator-objects): $(build)/%.o: $(src)/%.cpp $(vm-depends)
 	$(compile-object)
 
 $(heapwalk-objects): $(build)/%.o: $(src)/%.cpp $(vm-depends)
-	$(compile-object)
-
-$(driver-object): $(driver-source)
 	$(compile-object)
 
 $(build)/main-dynamic.o: $(driver-source)
@@ -1797,6 +1798,9 @@ else
 	$(ranlib) $(@)
 endif
 
+$(build)/objects/target/%.cpp.o: %.cpp
+	$(compile-object)
+
 $(bootimage-object) $(codeimage-object): $(bootimage-generator) \
 		$(classpath-jar-dep)
 	@echo "generating bootimage and codeimage binaries from $(classpath-build) using $(<)"
@@ -1805,6 +1809,12 @@ $(bootimage-object) $(codeimage-object): $(bootimage-generator) \
 		-codeimage-symbols $(codeimage-symbols)
 
 executable-objects = $(vm-objects) $(classpath-objects) $(driver-object) \
+	$(vm-heapwalk-objects) $(boot-object) $(vm-classpath-objects) \
+	$(javahome-object) $(boot-javahome-object) $(lzma-decode-objects)
+
+kaleidoscope-sources = example/kaleidoscope/toy.cpp example/kaleidoscope/main.cpp
+kaleidoscope-objects = $(call target-objects,$(kaleidoscope-sources)) \
+	$(vm-objects) $(classpath-objects) $(driver-object) \
 	$(vm-heapwalk-objects) $(boot-object) $(vm-classpath-objects) \
 	$(javahome-object) $(boot-javahome-object) $(lzma-decode-objects)
 
@@ -1849,6 +1859,9 @@ endif
 endif
 
 $(executable): $(executable-objects)
+	$(link-executable)
+
+$(kaleidoscope): $(kaleidoscope-objects)
 	$(link-executable)
 
 $(unittest-executable): $(unittest-executable-objects)
