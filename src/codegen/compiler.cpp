@@ -2666,11 +2666,8 @@ class MyCompiler: public Compiler {
 
     appendCombine(&c,
                   op,
-                  a->type.size(),
                   static_cast<Value*>(a),
-                  b->type.size(),
                   static_cast<Value*>(b),
-                  type.size(),
                   result);
     return result;
   }
@@ -2683,7 +2680,7 @@ class MyCompiler: public Compiler {
                                                           and isFloatValue(a)));
     Value* result = value(&c, a->type);
     appendTranslate(
-        &c, op, a->type.size(), static_cast<Value*>(a), a->type.size(), result);
+        &c, op, static_cast<Value*>(a), result);
     return result;
   }
 
@@ -2694,9 +2691,7 @@ class MyCompiler: public Compiler {
     Value* result = value(&c, resType);
     appendTranslate(&c,
                     lir::Float2Float,
-                    a->type.size(),
                     static_cast<Value*>(a),
-                    resType.size(),
                     result);
     return result;
   }
@@ -2708,9 +2703,7 @@ class MyCompiler: public Compiler {
     Value* result = value(&c, resType);
     appendTranslate(&c,
                     lir::Float2Int,
-                    a->type.size(),
                     static_cast<Value*>(a),
-                    resType.size(),
                     result);
     return result;
   }
@@ -2722,9 +2715,7 @@ class MyCompiler: public Compiler {
     Value* result = value(&c, resType);
     appendTranslate(&c,
                     lir::Int2Float,
-                    a->type.size(),
                     static_cast<Value*>(a),
-                    resType.size(),
                     result);
     return result;
   }
