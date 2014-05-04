@@ -1153,7 +1153,7 @@ ifeq ($(aot-only),true)
 	cflags += -DAVIAN_AOT_ONLY
 endif
 
-vm-cpp-objects = $(call cpp-objects,$(vm-sources),$(src),$(build))
+vm-cpp-objects = $(call target-objects,$(vm-sources),$(src),$(build))
 all-codegen-target-objects = $(call cpp-objects,$(all-codegen-target-sources),$(src),$(build))
 vm-asm-objects = $(call asm-objects,$(vm-asm-sources),$(src),$(build))
 vm-objects = $(vm-cpp-objects) $(vm-asm-objects)
@@ -1627,9 +1627,6 @@ define compile-unittest-object
 	$(cxx) $(cflags) -c $$($(windows-path) $(<)) -I$(unittest) $(call output,$(@))
 endef
 
-$(vm-cpp-objects): $(build)/%.o: $(src)/%.cpp $(vm-depends)
-	$(compile-object)
-
 ifeq ($(process),interpret)
 $(all-codegen-target-objects): $(build)/%.o: $(src)/%.cpp $(vm-depends)
 	$(compile-object)
@@ -1797,6 +1794,8 @@ else
 	$(ar) cru $(@) $(build)/libavian/*.o
 	$(ranlib) $(@)
 endif
+
+$(vm-cpp-objects): $(vm-depends)
 
 $(build)/objects/target/%.cpp.o: %.cpp
 	$(compile-object)
