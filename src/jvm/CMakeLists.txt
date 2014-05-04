@@ -1,0 +1,1 @@
+add_library(avian_jvm_finder finder.cpp)

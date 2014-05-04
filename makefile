@@ -141,7 +141,7 @@ ifneq ($(openjdk),)
 		endif
 		javahome-object = $(build)/javahome-jar.o
 		boot-javahome-object = $(build)/boot-javahome.o
-		stub-sources = $(src)/openjdk/stubs.cpp
+		stub-sources = $(src)/jvm/openjdk/stubs.cpp
 		stub-objects = $(call cpp-objects,$(stub-sources),$(src),$(build))
 	else
 		soname-flag = -Wl,-soname -Wl,$(so-prefix)jvm$(so-suffix)
@@ -257,7 +257,7 @@ ifneq ($(android),)
 	javahome-object = $(build)/javahome-jar.o
 	boot-javahome-object = $(build)/boot-javahome.o
 	build-javahome = $(android)/bionic/libc/zoneinfo
-	stub-sources = $(src)/android/stubs.cpp
+	stub-sources = $(src)/jvm/android/stubs.cpp
 	stub-objects = $(call cpp-objects,$(stub-sources),$(src),$(build))
 endif
 
@@ -720,7 +720,7 @@ ifeq ($(platform),windows)
 	cflags = -I$(inc) $(common-cflags) -DWINVER=0x0500
 
 	ifeq (,$(filter mingw32 cygwin,$(build-platform)))
-		openjdk-extra-cflags += -I$(src)/openjdk/caseSensitive
+		openjdk-extra-cflags += -I$(src)/jvm/openjdk/caseSensitive
 		prefix := $(shell i686-w64-mingw32-gcc --version >/dev/null 2>&1 \
 			&& echo i686-w64-mingw32- || echo x86_64-w64-mingw32-)
 		cxx = $(prefix)g++ -m32
@@ -1082,17 +1082,17 @@ vm-depends := $(generated-code) \
 vm-sources = \
 	$(src)/system/$(system).cpp \
 	$(wildcard $(src)/system/$(system)/*.cpp) \
-	$(src)/finder.cpp \
-	$(src)/machine.cpp \
-	$(src)/util.cpp \
 	$(src)/heap/heap.cpp \
-	$(src)/$(process).cpp \
-	$(src)/classpath-$(classpath).cpp \
-	$(src)/builtin.cpp \
-	$(src)/jnienv.cpp \
-	$(src)/process.cpp
+	$(src)/jvm/finder.cpp \
+	$(src)/jvm/machine.cpp \
+	$(src)/jvm/util.cpp \
+	$(src)/jvm/$(process).cpp \
+	$(src)/jvm/classpath-$(classpath).cpp \
+	$(src)/jvm/builtin.cpp \
+	$(src)/jvm/jnienv.cpp \
+	$(src)/jvm/process.cpp
 
-vm-asm-sources = $(src)/$(asm).$(asm-format)
+vm-asm-sources = $(src)/jvm/$(asm).$(asm-format)
 
 target-asm = $(asm)
 
@@ -1108,7 +1108,7 @@ embed-objects = $(call cpp-objects,$(embed-sources),$(src),$(build-embed))
 compiler-sources = \
 	$(src)/codegen/compiler.cpp \
 	$(wildcard $(src)/codegen/compiler/*.cpp) \
-	$(src)/debug-util.cpp \
+	$(src)/jvm/debug-util.cpp \
 	$(src)/codegen/registers.cpp \
 	$(src)/codegen/runtime.cpp \
 	$(src)/codegen/targets.cpp \
@@ -1144,7 +1144,7 @@ ifeq ($(process),compile)
 		endif
 	endif
 
-	vm-asm-sources += $(src)/compile-$(asm).$(asm-format)
+	vm-asm-sources += $(src)/jvm/compile-$(asm).$(asm-format)
 endif
 cflags += -DAVIAN_PROCESS_$(process)
 ifeq ($(aot-only),true)
@@ -1204,12 +1204,12 @@ lflags += $(extra-lflags)
 
 openjdk-cflags += $(extra-cflags)
 
-driver-source = $(src)/main.cpp
-driver-object = $(build)/main.o
+driver-source = $(src)/jvm/main.cpp
+driver-object = $(build)/jvm/main.o
 driver-dynamic-objects = \
 	$(build)/main-dynamic.o
 
-boot-source = $(src)/boot.cpp
+boot-source = $(src)/jvm/boot.cpp
 boot-object = $(build)/boot.o
 
 generator-depends := $(wildcard $(src)/*.h)
@@ -1217,7 +1217,7 @@ generator-sources = \
 	$(src)/tools/type-generator/main.cpp \
 	$(src)/system/$(build-system).cpp \
 	$(wildcard $(src)/system/$(system)/*.cpp) \
-	$(src)/finder.cpp
+	$(src)/jvm/finder.cpp
 
 ifneq ($(lzma),)
 	common-cflags += -I$(lzma) -DAVIAN_USE_LZMA -D_7ZIP_ST
@@ -1518,7 +1518,7 @@ $(build)/test.sh: $(test)/test.sh
 	cp $(<) $(@)
 
 gen-arg = $(shell echo $(1) | sed -e 's:$(build)/type-\(.*\)\.cpp:\1:')
-$(generated-code): %.cpp: $(src)/types.def $(generator) $(classpath-dep)
+$(generated-code): %.cpp: $(src)/jvm/types.def $(generator) $(classpath-dep)
 	@echo "generating $(@)"
 	@mkdir -p $(dir $(@))
 	$(generator) $(boot-classpath) $(<) $(@) $(call gen-arg,$(@))
@@ -1957,7 +1957,7 @@ endif
 		$(optimization-cflags) -w -c $(build)/openjdk/$(notdir $(<)) \
 		$(call output,$(@)) -Wno-return-type
 
-$(openjdk-local-objects): $(build)/openjdk/%-openjdk.o: $(src)/openjdk/%.c \
+$(openjdk-local-objects): $(build)/openjdk/%-openjdk.o: $(src)/jvm/openjdk/%.c \
 		$(openjdk-headers-dep)
 	@echo "compiling $(@)"
 	@mkdir -p $(dir $(@))

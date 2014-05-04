@@ -40,14 +40,14 @@ class BootImage {
   class ThunkCollection {
    public:
 #define THUNK_FIELD(name) Thunk name;
-#include "bootimage-fields.cpp"
+#include "jvm/bootimage-fields.cpp"
 #undef THUNK_FIELD
   } PACKED;
 
   static const uint32_t Magic = 0x22377322;
 
 #define FIELD(name) uint32_t name;
-#include "bootimage-fields.cpp"
+#include "jvm/bootimage-fields.cpp"
 #undef FIELD
 
   ThunkCollection thunks;
@@ -60,13 +60,13 @@ class OffsetResolver {
 
 #define NAME(x) Target##x
 #define LABEL(x) target_##x
-#include "bootimage-template.cpp"
+#include "jvm/bootimage-template.cpp"
 #undef LABEL
 #undef NAME
 
 #define NAME(x) x
 #define LABEL(x) x
-#include "bootimage-template.cpp"
+#include "jvm/bootimage-template.cpp"
 #undef LABEL
 #undef NAME
 
