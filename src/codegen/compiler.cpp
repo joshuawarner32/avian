@@ -2694,7 +2694,6 @@ class MyCompiler: public Compiler {
   {
     assert(&c, isFloatValue(a));
     assert(&c, resType.flavor() == ir::Type::Float);
-    assert(&c, a->type.flavor() == ir::Type::Float);
     Value* result = value(&c, resType);
     appendTranslate(&c,
                     lir::Float2Float,
@@ -2705,32 +2704,28 @@ class MyCompiler: public Compiler {
     return result;
   }
 
-  virtual ir::Value* f2i(ir::Type aType, ir::Type resType, ir::Value* a)
+  virtual ir::Value* f2i(ir::Type resType, ir::Value* a)
   {
-    assert(&c, aType == a->type);
     assert(&c, isFloatValue(a));
     assert(&c, resType.flavor() != ir::Type::Float);
-    assert(&c, aType.flavor() == ir::Type::Float);
     Value* result = value(&c, resType);
     appendTranslate(&c,
                     lir::Float2Int,
-                    aType.size(),
+                    a->type.size(),
                     static_cast<Value*>(a),
                     resType.size(),
                     result);
     return result;
   }
 
-  virtual ir::Value* i2f(ir::Type aType, ir::Type resType, ir::Value* a)
+  virtual ir::Value* i2f(ir::Type resType, ir::Value* a)
   {
-    assert(&c, aType == a->type);
     assert(&c, isGeneralValue(a));
     assert(&c, resType.flavor() == ir::Type::Float);
-    assert(&c, aType.flavor() != ir::Type::Float);
     Value* result = value(&c, resType);
     appendTranslate(&c,
                     lir::Int2Float,
-                    aType.size(),
+                    a->type.size(),
                     static_cast<Value*>(a),
                     resType.size(),
                     result);
