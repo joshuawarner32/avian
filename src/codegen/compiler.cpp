@@ -2679,6 +2679,7 @@ class MyCompiler: public Compiler {
                              ir::Type type,
                              ir::Value* a)
   {
+    assert(&c, a->type == type);
     assert(&c,
            (isGeneralUnaryOp(op) and isGeneralValue(a))or(isFloatUnaryOp(op)
                                                           and isFloatValue(a)));
