@@ -26,3 +26,4 @@ add_custom_target(check ${CMAKE_CTEST_COMMAND} -V)
 
 add_subdirectory (src)
 add_subdirectory (unittest)
+add_subdirectory (classpath)
