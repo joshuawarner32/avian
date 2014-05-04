@@ -1295,8 +1295,8 @@ void storeLocal(Context* context,
                  || value->type.flavor() == ir::Type::Address))
          // TODO Temporary hack for Subroutine test!!!
          || value->type.flavor() == ir::Type::Integer);
-  context->compiler->storeLocal
-    (footprint, value, translateLocalIndex(context, footprint, index));
+  context->compiler->storeLocal(value,
+                                translateLocalIndex(context, footprint, index));
 }
 
 avian::util::FixedAllocator* codeAllocator(MyThread* t);
@@ -1423,7 +1423,7 @@ class Frame {
 
       return c->binaryOp(
           lir::Add,
-          types.address,
+          types.object,
           c->memory(
               c->threadRegister(), types.address, TARGET_THREAD_HEAPIMAGE),
           c->promiseConstant(p, types.address));
@@ -4145,10 +4145,10 @@ compile(MyThread* t, Frame* initialFrame, unsigned initialIp,
         break;
 
       case faload:
-        frame->pushInt(
+        frame->pushFloat(
             c->load(ir::SignExtend,
                     c->memory(array, types.f4, TargetArrayBody, index),
-                    types.f8));
+                    types.f4));
         break;
 
       case iaload:
