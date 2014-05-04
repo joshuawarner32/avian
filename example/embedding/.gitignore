@@ -1,0 +1,6 @@
+/libavian.a
+/boot.jar
+/*.o
+/__.SYMDEF
+/*.class
+/hello
