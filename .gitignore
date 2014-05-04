@@ -1,5 +1,5 @@
 .gdb_history
-build
+/build
 *~
 .classpath
 .project
@@ -12,3 +12,4 @@ bin
 /*.sublime-*
 workspace/
 src/.cproject
+/cmake-build

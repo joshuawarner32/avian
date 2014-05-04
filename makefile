@@ -1081,7 +1081,7 @@ vm-depends := $(generated-code) \
 
 vm-sources = \
 	$(src)/system/$(system).cpp \
-	$(src)/system/$(system)/signal.cpp \
+	$(wildcard $(src)/system/$(system)/*.cpp) \
 	$(src)/finder.cpp \
 	$(src)/machine.cpp \
 	$(src)/util.cpp \
@@ -1216,7 +1216,7 @@ generator-depends := $(wildcard $(src)/*.h)
 generator-sources = \
 	$(src)/tools/type-generator/main.cpp \
 	$(src)/system/$(build-system).cpp \
-	$(src)/system/$(build-system)/signal.cpp \
+	$(wildcard $(src)/system/$(system)/*.cpp) \
 	$(src)/finder.cpp
 
 ifneq ($(lzma),)
