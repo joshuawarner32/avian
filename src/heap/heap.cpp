@@ -1926,8 +1926,11 @@ class MyHeap: public Heap {
     return Fixie::totalSize(sizeInWords, objectMask);
   }
 
-  void* allocateFixed(Allocator* allocator, unsigned sizeInWords,
-                      bool objectMask, Fixie** handle, bool immortal)
+  void* allocateFixed(Alloc* allocator,
+                      unsigned sizeInWords,
+                      bool objectMask,
+                      Fixie** handle,
+                      bool immortal)
   {
     expect(&c, not limitExceeded());
 
@@ -1940,15 +1943,17 @@ class MyHeap: public Heap {
       ->body();
   }
 
-  virtual void* allocateFixed(Allocator* allocator, unsigned sizeInWords,
+  virtual void* allocateFixed(Alloc* allocator,
+                              unsigned sizeInWords,
                               bool objectMask)
   {
     return allocateFixed
       (allocator, sizeInWords, objectMask, &(c.fixies), false);
   }
 
-  virtual void* allocateImmortalFixed(Allocator* allocator,
-                                      unsigned sizeInWords, bool objectMask)
+  virtual void* allocateImmortalFixed(Alloc* allocator,
+                                      unsigned sizeInWords,
+                                      bool objectMask)
   {
     return allocateFixed(allocator, sizeInWords, objectMask, 0, true);
   }

@@ -837,7 +837,7 @@ class MySystem: public System {
     return SO_SUFFIX;
   }
 
-  virtual const char* toAbsolutePath(avian::util::Allocator* allocator,
+  virtual const char* toAbsolutePath(avian::util::Alloc* allocator,
                                      const char* name)
   {
 #if !defined(WINAPI_FAMILY) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)

@@ -51,9 +51,14 @@ class DirectoryElement: public Element {
  public:
   class Iterator: public Element::Iterator {
    public:
-    Iterator(System* s, Allocator* allocator, const char* name, unsigned skip):
-      s(s), allocator(allocator), name(name), skip(skip), directory(0),
-      last(0), it(0)
+    Iterator(System* s, Alloc* allocator, const char* name, unsigned skip)
+        : s(s),
+          allocator(allocator),
+          name(name),
+          skip(skip),
+          directory(0),
+          last(0),
+          it(0)
     {
       if (not s->success(s->open(&directory, name))) {
         directory = 0;
@@ -101,7 +106,7 @@ class DirectoryElement: public Element {
     }
 
     System* s;
-    Allocator* allocator;
+    Alloc* allocator;
     const char* name;
     unsigned skip;
     System::Directory* directory;
@@ -109,13 +114,13 @@ class DirectoryElement: public Element {
     Iterator* it;
   };
 
-  DirectoryElement(System* s, Allocator* allocator, const char* name):
-    s(s),
-    allocator(allocator),
-    originalName(name),
-    name(s->toAbsolutePath(allocator, name)),
-    urlPrefix_(append(allocator, "file:", this->name, "/")),
-    sourceUrl_(append(allocator, "file:", this->name))
+  DirectoryElement(System* s, Alloc* allocator, const char* name)
+      : s(s),
+        allocator(allocator),
+        originalName(name),
+        name(s->toAbsolutePath(allocator, name)),
+        urlPrefix_(append(allocator, "file:", this->name, "/")),
+        sourceUrl_(append(allocator, "file:", this->name))
   { }
 
   virtual Element::Iterator* iterator() {
@@ -169,7 +174,7 @@ class DirectoryElement: public Element {
   }
 
   System* s;
-  Allocator* allocator;
+  Alloc* allocator;
   const char* originalName;
   const char* name;
   const char* urlPrefix_;
@@ -178,13 +183,16 @@ class DirectoryElement: public Element {
 
 class PointerRegion: public System::Region {
  public:
-  PointerRegion(System* s, Allocator* allocator, const uint8_t* start,
-                size_t length, bool freePointer = false):
-    s(s),
-    allocator(allocator),
-    start_(start),
-    length_(length),
-    freePointer(freePointer)
+  PointerRegion(System* s,
+                Alloc* allocator,
+                const uint8_t* start,
+                size_t length,
+                bool freePointer = false)
+      : s(s),
+        allocator(allocator),
+        start_(start),
+        length_(length),
+        freePointer(freePointer)
   { }
 
   virtual const uint8_t* start() {
@@ -203,7 +211,7 @@ class PointerRegion: public System::Region {
   }
 
   System* s;
-  Allocator* allocator;
+  Alloc* allocator;
   const uint8_t* start_;
   size_t length_;
   bool freePointer;
@@ -211,10 +219,8 @@ class PointerRegion: public System::Region {
 
 class DataRegion: public System::Region {
  public:
-  DataRegion(System* s, Allocator* allocator, size_t length):
-    s(s),
-    allocator(allocator),
-    length_(length)
+  DataRegion(System* s, Alloc* allocator, size_t length)
+      : s(s), allocator(allocator), length_(length)
   { }
 
   virtual const uint8_t* start() {
@@ -230,7 +236,7 @@ class DataRegion: public System::Region {
   }
 
   System* s;
-  Allocator* allocator;
+  Alloc* allocator;
   size_t length_;
   uint8_t data[0];
 };
@@ -252,24 +258,25 @@ class JarIndex {
     const uint8_t* entry;
   };
 
-  JarIndex(System* s, Allocator* allocator, unsigned capacity):
-    s(s),
-    allocator(allocator),
-    capacity(capacity),
-    position(0),
-    nodes(static_cast<List<Entry>*>(allocator->allocate(sizeof(List<Entry>) * capacity)))
+  JarIndex(System* s, Alloc* allocator, unsigned capacity)
+      : s(s),
+        allocator(allocator),
+        capacity(capacity),
+        position(0),
+        nodes(static_cast<List<Entry>*>(
+            allocator->allocate(sizeof(List<Entry>) * capacity)))
   {
     memset(table, 0, sizeof(List<Entry>*) * capacity);
   }
 
-  static JarIndex* make(System* s, Allocator* allocator, unsigned capacity) {
+  static JarIndex* make(System* s, Alloc* allocator, unsigned capacity)
+  {
     return new
       (allocator->allocate(sizeof(JarIndex) + (sizeof(List<Entry>*) * capacity)))
       JarIndex(s, allocator, capacity);
   }
-  
-  static JarIndex* open(System* s, Allocator* allocator,
-                        System::Region* region)
+
+  static JarIndex* open(System* s, Alloc* allocator, System::Region* region)
   {
     JarIndex* index = make(s, allocator, 32);
 
@@ -404,7 +411,7 @@ class JarIndex {
   }
 
   System* s;
-  Allocator* allocator;
+  Alloc* allocator;
   unsigned capacity;
   unsigned position;
   
@@ -416,8 +423,8 @@ class JarElement: public Element {
  public:
   class Iterator: public Element::Iterator {
    public:
-    Iterator(System* s, Allocator* allocator, JarIndex* index):
-      s(s), allocator(allocator), index(index), position(0)
+    Iterator(System* s, Alloc* allocator, JarIndex* index)
+        : s(s), allocator(allocator), index(index), position(0)
     { }
 
     virtual const char* next(unsigned* size) {
@@ -435,36 +442,40 @@ class JarElement: public Element {
     }
 
     System* s;
-    Allocator* allocator;
+    Alloc* allocator;
     JarIndex* index;
     unsigned position;
   };
 
-  JarElement(System* s, Allocator* allocator, const char* name,
-             bool canonicalizePath = true):
-    s(s),
-    allocator(allocator),
-    originalName(name),
-    name(name and canonicalizePath
-         ? s->toAbsolutePath(allocator, name) : name),
-    urlPrefix_(this->name
-               ? append(allocator, "jar:file:", this->name, "!/") : 0),
-    sourceUrl_(this->name
-               ? append(allocator, "file:", this->name) : 0),
-    region(0), index(0)
+  JarElement(System* s,
+             Alloc* allocator,
+             const char* name,
+             bool canonicalizePath = true)
+      : s(s),
+        allocator(allocator),
+        originalName(name),
+        name(name and canonicalizePath ? s->toAbsolutePath(allocator, name)
+                                       : name),
+        urlPrefix_(this->name ? append(allocator, "jar:file:", this->name, "!/")
+                              : 0),
+        sourceUrl_(this->name ? append(allocator, "file:", this->name) : 0),
+        region(0),
+        index(0)
   { }
 
-  JarElement(System* s, Allocator* allocator, const uint8_t* jarData,
-             unsigned jarLength):
-    s(s),
-    allocator(allocator),
-    originalName(0),
-    name(0),
-    urlPrefix_(name ? append(allocator, "jar:file:", name, "!/") : 0),
-    sourceUrl_(name ? append(allocator, "file:", name) : 0),
-    region(new (allocator->allocate(sizeof(PointerRegion)))
-           PointerRegion(s, allocator, jarData, jarLength)),
-    index(JarIndex::open(s, allocator, region))
+  JarElement(System* s,
+             Alloc* allocator,
+             const uint8_t* jarData,
+             unsigned jarLength)
+      : s(s),
+        allocator(allocator),
+        originalName(0),
+        name(0),
+        urlPrefix_(name ? append(allocator, "jar:file:", name, "!/") : 0),
+        sourceUrl_(name ? append(allocator, "file:", name) : 0),
+        region(new (allocator->allocate(sizeof(PointerRegion)))
+               PointerRegion(s, allocator, jarData, jarLength)),
+        index(JarIndex::open(s, allocator, region))
   { }
 
   virtual Element::Iterator* iterator() {
@@ -546,7 +557,7 @@ class JarElement: public Element {
   }
 
   System* s;
-  Allocator* allocator;
+  Alloc* allocator;
   const char* originalName;
   const char* name;
   const char* urlPrefix_;
@@ -557,10 +568,12 @@ class JarElement: public Element {
 
 class BuiltinElement: public JarElement {
  public:
-  BuiltinElement(System* s, Allocator* allocator, const char* name,
-                 const char* libraryName):
-    JarElement(s, allocator, name, false),
-    libraryName(libraryName ? copy(allocator, libraryName) : 0)
+  BuiltinElement(System* s,
+                 Alloc* allocator,
+                 const char* name,
+                 const char* libraryName)
+      : JarElement(s, allocator, name, false),
+        libraryName(libraryName ? copy(allocator, libraryName) : 0)
   { }
 
   virtual void init() {
@@ -651,14 +664,23 @@ baseName(const char* name, char fileSeparator)
   return last ? (last + 1) - name : 0;
 }
 
-void
-add(System* s, Element** first, Element** last, Allocator* allocator,
-    const char* name, unsigned nameLength, const char* bootLibrary);
+void add(System* s,
+         Element** first,
+         Element** last,
+         Alloc* allocator,
+         const char* name,
+         unsigned nameLength,
+         const char* bootLibrary);
 
-void
-addTokens(System* s, Element** first, Element** last, Allocator* allocator,
-          const char* jarName, unsigned jarNameBase, const char* tokens,
-          unsigned tokensLength, const char* bootLibrary)
+void addTokens(System* s,
+               Element** first,
+               Element** last,
+               Alloc* allocator,
+               const char* jarName,
+               unsigned jarNameBase,
+               const char* tokens,
+               unsigned tokensLength,
+               const char* bootLibrary)
 {
   for (Tokenizer t(String(tokens, tokensLength), ' '); t.hasMore();) {
     String token(t.next());
@@ -682,9 +704,12 @@ continuationLine(const uint8_t* base, unsigned total, unsigned* start,
     and base[*start] == ' ';
 }
 
-void
-addJar(System* s, Element** first, Element** last, Allocator* allocator,
-       const char* name, const char* bootLibrary)
+void addJar(System* s,
+            Element** first,
+            Element** last,
+            Alloc* allocator,
+            const char* name,
+            const char* bootLibrary)
 {
   if (DebugFind) {
     fprintf(stderr, "add jar %s\n", name);
@@ -762,9 +787,13 @@ addJar(System* s, Element** first, Element** last, Allocator* allocator,
   }
 }
 
-void
-add(System* s, Element** first, Element** last, Allocator* allocator,
-    const char* token, unsigned tokenLength, const char* bootLibrary)
+void add(System* s,
+         Element** first,
+         Element** last,
+         Alloc* allocator,
+         const char* token,
+         unsigned tokenLength,
+         const char* bootLibrary)
 {
   if (*token == '[' and token[tokenLength - 1] == ']') {
     char* name = static_cast<char*>(allocator->allocate(tokenLength - 1));
@@ -808,9 +837,10 @@ add(System* s, Element** first, Element** last, Allocator* allocator,
   }
 }
 
-Element*
-parsePath(System* s, Allocator* allocator, const char* path,
-          const char* bootLibrary)
+Element* parsePath(System* s,
+                   Alloc* allocator,
+                   const char* path,
+                   const char* bootLibrary)
 {
   Element* first = 0;
   Element* last = 0;
@@ -825,9 +855,11 @@ parsePath(System* s, Allocator* allocator, const char* path,
 
 class MyIterator: public Finder::IteratorImp {
  public:
-  MyIterator(System* s, Allocator* allocator, Element* path):
-    s(s), allocator(allocator), e(path ? path->next : 0),
-    it(path ? path->iterator() : 0)
+  MyIterator(System* s, Alloc* allocator, Element* path)
+      : s(s),
+        allocator(allocator),
+        e(path ? path->next : 0),
+        it(path ? path->iterator() : 0)
   { }
 
   virtual const char* next(unsigned* size) {
@@ -854,28 +886,32 @@ class MyIterator: public Finder::IteratorImp {
   }
 
   System* s;
-  Allocator* allocator;
+  Alloc* allocator;
   Element* e;
   Element::Iterator* it;
 };
 
 class MyFinder: public Finder {
  public:
-  MyFinder(System* system, Allocator* allocator, const char* path,
-           const char* bootLibrary):
-    system(system),
-    allocator(allocator),
-    path_(parsePath(system, allocator, path, bootLibrary)),
-    pathString(copy(allocator, path))
+  MyFinder(System* system,
+           Alloc* allocator,
+           const char* path,
+           const char* bootLibrary)
+      : system(system),
+        allocator(allocator),
+        path_(parsePath(system, allocator, path, bootLibrary)),
+        pathString(copy(allocator, path))
   { }
 
-  MyFinder(System* system, Allocator* allocator, const uint8_t* jarData,
-           unsigned jarLength):
-    system(system),
-    allocator(allocator),
-    path_(new (allocator->allocate(sizeof(JarElement)))
-          JarElement(system, allocator, jarData, jarLength)),
-    pathString(0)
+  MyFinder(System* system,
+           Alloc* allocator,
+           const uint8_t* jarData,
+           unsigned jarLength)
+      : system(system),
+        allocator(allocator),
+        path_(new (allocator->allocate(sizeof(JarElement)))
+              JarElement(system, allocator, jarData, jarLength)),
+        pathString(0)
   { }
 
   virtual IteratorImp* iterator() {
@@ -957,7 +993,7 @@ class MyFinder: public Finder {
   }
 
   System* system;
-  Allocator* allocator;
+  Alloc* allocator;
   Element* path_;
   const char* pathString;
 };
@@ -966,14 +1002,18 @@ class MyFinder: public Finder {
 
 namespace vm {
 
-AVIAN_EXPORT Finder*
-makeFinder(System* s, Allocator* a, const char* path, const char* bootLibrary)
+AVIAN_EXPORT Finder* makeFinder(System* s,
+                                Alloc* a,
+                                const char* path,
+                                const char* bootLibrary)
 {
   return new (a->allocate(sizeof(MyFinder))) MyFinder(s, a, path, bootLibrary);
 }
 
-Finder*
-makeFinder(System* s, Allocator* a, const uint8_t* jarData, unsigned jarLength)
+Finder* makeFinder(System* s,
+                   Alloc* a,
+                   const uint8_t* jarData,
+                   unsigned jarLength)
 {
   return new (a->allocate(sizeof(MyFinder)))
     MyFinder(s, a, jarData, jarLength);
