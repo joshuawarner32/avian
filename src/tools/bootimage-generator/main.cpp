@@ -1287,7 +1287,7 @@ writeBootImage2(Thread* t, OutputStream* bootimageOutput, OutputStream* codeOutp
   setRoot(t, Machine::OutOfMemoryError,
           make(t, type(t, Machine::OutOfMemoryErrorType)));
 
-  Zone zone(t->m->system, t->m->heap, 64 * 1024);
+  Zone zone(t->m->heap, 64 * 1024);
 
   class MyCompilationHandler : public Processor::CompilationHandler {
    public:

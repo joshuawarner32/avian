@@ -16,17 +16,21 @@
 namespace avian {
 namespace util {
 
-class Allocator {
+class AllocOnly {
+ public:
+  virtual void* allocate(size_t size) = 0;
+};
+
+class Allocator : public AllocOnly {
  public:
   virtual void* tryAllocate(size_t size) = 0;
-  virtual void* allocate(size_t size) = 0;
   virtual void free(const void* p, size_t size) = 0;
 };
 
 }  // namespace util
 }  // namespace avian
 
-inline void* operator new(size_t size, avian::util::Allocator* allocator)
+inline void* operator new(size_t size, avian::util::AllocOnly* allocator)
 {
   return allocator->allocate(size);
 }

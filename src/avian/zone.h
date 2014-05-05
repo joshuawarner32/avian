@@ -17,7 +17,7 @@
 
 namespace vm {
 
-class Zone : public avian::util::Allocator {
+class Zone : public avian::util::AllocOnly {
  public:
   class Segment {
    public:
@@ -31,12 +31,12 @@ class Zone : public avian::util::Allocator {
     uint8_t data[0];
   };
 
-  Zone(System* s, Allocator* allocator, size_t minimumFootprint):
-    s(s),
-    allocator(allocator),
-    segment(0),
-    minimumFootprint(minimumFootprint < sizeof(Segment) ? 0 :
-                     minimumFootprint - sizeof(Segment))
+  Zone(avian::util::Allocator* allocator, size_t minimumFootprint)
+      : allocator(allocator),
+        segment(0),
+        minimumFootprint(minimumFootprint < sizeof(Segment)
+                             ? 0
+                             : minimumFootprint - sizeof(Segment))
   { }
 
   ~Zone() {
@@ -52,6 +52,46 @@ class Zone : public avian::util::Allocator {
     segment = 0;
   }
 
+  virtual void* allocate(size_t size)
+  {
+    size = pad(size);
+    void* p = tryAllocate(size);
+    if (p) {
+      return p;
+    } else {
+      ensure(size);
+      void* r = segment->data + segment->position;
+      segment->position += size;
+      return r;
+    }
+  }
+
+  void* peek(size_t size)
+  {
+    size = pad(size);
+    Segment* s = segment;
+    while (s->position < size) {
+      size -= s->position;
+      s = s->next;
+    }
+    return s->data + (s->position - size);
+  }
+
+  void pop(size_t size)
+  {
+    size = pad(size);
+    Segment* s = segment;
+    while (s->position < size) {
+      size -= s->position;
+      Segment* next = s->next;
+      allocator->free(s, sizeof(Segment) + s->size);
+      s = next;
+    }
+    s->position -= size;
+    segment = s;
+  }
+
+ private:
   static unsigned padToPage(unsigned size) {
     return (size + (LikelyPageSizeInBytes - 1))
       & ~(LikelyPageSizeInBytes - 1);
@@ -88,7 +128,8 @@ class Zone : public avian::util::Allocator {
     }
   }
 
-  virtual void* tryAllocate(size_t size) {
+  void* tryAllocate(size_t size)
+  {
     size = pad(size);
     if (tryEnsure(size)) {
       void* r = segment->data + segment->position;
@@ -99,50 +140,7 @@ class Zone : public avian::util::Allocator {
     }
   }
 
-  virtual void* allocate(size_t size) {
-    size = pad(size);
-    void* p = tryAllocate(size);
-    if (p) {
-      return p;
-    } else {
-      ensure(size);
-      void* r = segment->data + segment->position;
-      segment->position += size;
-      return r;
-    }
-  }
-
-  void* peek(size_t size) {
-    size = pad(size);
-    Segment* s = segment;
-    while (s->position < size) {
-      size -= s->position;
-      s = s->next;
-    }
-    return s->data + (s->position - size);
-  }
-
-  void pop(size_t size) {
-    size = pad(size);
-    Segment* s = segment;
-    while (s->position < size) {
-      size -= s->position;
-      Segment* next = s->next;
-      allocator->free(s, sizeof(Segment) + s->size);
-      s = next;
-    }
-    s->position -= size;
-    segment = s;
-  }
-
-  virtual void free(const void*, size_t) {
-    // not supported
-    abort(s);
-  }
-  
-  System* s;
-  Allocator* allocator;
-  void* context;
+  avian::util::Allocator* allocator;
   Segment* segment;
   size_t minimumFootprint;
 };

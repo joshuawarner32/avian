@@ -51,9 +51,8 @@ public:
   Zone zone;
   Assembler* a;
 
-  Asm(BasicEnv& env):
-    zone(env.s, env.heap, 8192),
-    a(env.arch->makeAssembler(env.heap, &zone))
+  Asm(BasicEnv& env)
+      : zone(env.heap, 8192), a(env.arch->makeAssembler(env.heap, &zone))
   { }
 
   ~Asm() {
