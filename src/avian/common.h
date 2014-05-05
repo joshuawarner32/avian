@@ -43,19 +43,19 @@
 
 inline int fpclassify(double d) {
 
-	switch(_fpclass(d)) {
-		case _FPCLASS_SNAN:
-		case _FPCLASS_QNAN:
-			return FP_NAN;
-		case _FPCLASS_PINF:
-		case _FPCLASS_NINF:
-			return FP_INFINITE;
-	}
-	return FP_UNDEF;
+  switch(_fpclass(d)) {
+    case _FPCLASS_SNAN:
+    case _FPCLASS_QNAN:
+      return FP_NAN;
+    case _FPCLASS_PINF:
+    case _FPCLASS_NINF:
+      return FP_INFINITE;
+  }
+  return FP_UNDEF;
 }
 
 inline int signbit(double d) {
-	return _copysign(1.0, d) < 0;
+  return _copysign(1.0, d) < 0;
 }
 
 #  define not !
@@ -281,28 +281,14 @@ const uintptr_t PointerMask
 
 const unsigned LikelyPageSizeInBytes = 4 * 1024;
 
-inline unsigned
-pad(unsigned n, unsigned alignment)
+inline size_t pad(size_t n, size_t alignment)
 {
   return (n + (alignment - 1)) & ~(alignment - 1);
 }
 
-inline unsigned
-pad(unsigned n)
+inline size_t pad(size_t n)
 {
   return pad(n, BytesPerWord);
-}
-
-inline uintptr_t
-padWord(uintptr_t n, uintptr_t alignment)
-{
-  return (n + (alignment - 1)) & ~(alignment - 1);
-}
-
-inline uintptr_t
-padWord(uintptr_t n)
-{
-  return padWord(n, BytesPerWord);
 }
 
 inline bool fitsInInt8(int64_t v) {

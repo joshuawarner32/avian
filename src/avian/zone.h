@@ -21,17 +21,17 @@ class Zone : public avian::util::Allocator {
  public:
   class Segment {
    public:
-    Segment(Segment* next, unsigned size):
+    Segment(Segment* next, size_t size):
       next(next), size(size), position(0)
     { }
 
     Segment* next;
-    uintptr_t size;
-    uintptr_t position;
+    size_t size;
+    size_t position;
     uint8_t data[0];
   };
 
-  Zone(System* s, Allocator* allocator, unsigned minimumFootprint):
+  Zone(System* s, Allocator* allocator, size_t minimumFootprint):
     s(s),
     allocator(allocator),
     segment(0),
@@ -88,7 +88,7 @@ class Zone : public avian::util::Allocator {
     }
   }
 
-  virtual void* tryAllocate(unsigned size) {
+  virtual void* tryAllocate(size_t size) {
     size = pad(size);
     if (tryEnsure(size)) {
       void* r = segment->data + segment->position;
@@ -99,7 +99,7 @@ class Zone : public avian::util::Allocator {
     }
   }
 
-  virtual void* allocate(unsigned size) {
+  virtual void* allocate(size_t size) {
     size = pad(size);
     void* p = tryAllocate(size);
     if (p) {
@@ -112,7 +112,7 @@ class Zone : public avian::util::Allocator {
     }
   }
 
-  void* peek(unsigned size) {
+  void* peek(size_t size) {
     size = pad(size);
     Segment* s = segment;
     while (s->position < size) {
@@ -122,7 +122,7 @@ class Zone : public avian::util::Allocator {
     return s->data + (s->position - size);
   }
 
-  void pop(unsigned size) {
+  void pop(size_t size) {
     size = pad(size);
     Segment* s = segment;
     while (s->position < size) {
@@ -135,7 +135,7 @@ class Zone : public avian::util::Allocator {
     segment = s;
   }
 
-  virtual void free(const void*, unsigned) {
+  virtual void free(const void*, size_t) {
     // not supported
     abort(s);
   }
@@ -144,7 +144,7 @@ class Zone : public avian::util::Allocator {
   Allocator* allocator;
   void* context;
   Segment* segment;
-  unsigned minimumFootprint;
+  size_t minimumFootprint;
 };
 
 } // namespace vm

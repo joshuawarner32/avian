@@ -18,10 +18,9 @@ namespace util {
 
 class Allocator {
  public:
-  // TODO: use size_t instead of unsigned
-  virtual void* tryAllocate(unsigned size) = 0;
-  virtual void* allocate(unsigned size) = 0;
-  virtual void free(const void* p, unsigned size) = 0;
+  virtual void* tryAllocate(size_t size) = 0;
+  virtual void* allocate(size_t size) = 0;
+  virtual void free(const void* p, size_t size) = 0;
 };
 
 }  // namespace util

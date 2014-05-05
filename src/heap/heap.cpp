@@ -1900,15 +1900,15 @@ class MyHeap: public Heap {
     return local::limitExceeded(&c, pendingAllocation);
   }
 
-  virtual void* tryAllocate(unsigned size) {
+  virtual void* tryAllocate(size_t size) {
     return local::tryAllocate(&c, size);
   }
 
-  virtual void* allocate(unsigned size) {
+  virtual void* allocate(size_t size) {
     return local::allocate(&c, size);
   }
 
-  virtual void free(const void* p, unsigned size) {
+  virtual void free(const void* p, size_t size) {
     free_(&c, p, size);
   }
 
