@@ -18,7 +18,7 @@ class Zone;
 namespace avian {
 
 namespace util {
-class Allocator;
+class Alloc;
 }
 
 namespace codegen {
@@ -129,7 +129,7 @@ virtual void planDestination
  unsigned bSize, const OperandMask& bMask,
  unsigned cSize, OperandMask& cMask) = 0;
 
-virtual Assembler* makeAssembler(util::Allocator*, vm::Zone*) = 0;
+virtual Assembler* makeAssembler(util::Alloc*, vm::Zone*) = 0;
 
 virtual void acquire() = 0;
 virtual void release() = 0;

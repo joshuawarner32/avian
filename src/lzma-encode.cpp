@@ -26,7 +26,7 @@ myProgress(void*, UInt64, UInt64)
 namespace vm {
 
 uint8_t*
-encodeLZMA(System* s, Allocator* a, uint8_t* in, unsigned inSize,
+encodeLZMA(System* s, AllocOnly* a, uint8_t* in, unsigned inSize,
            unsigned* outSize)
 {
   const unsigned PropHeaderSize = 5;
