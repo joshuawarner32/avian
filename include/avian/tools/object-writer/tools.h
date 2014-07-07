@@ -13,7 +13,7 @@
 
 #include <stdlib.h>
 
-#include <avian/util/string.h>
+#include <avian/util/tokenizer.h>
 #include <avian/util/slice.h>
 
 #include "avian/environment.h"
@@ -52,7 +52,7 @@ public:
     name(name) {}
 
   inline SymbolInfo():
-    name("") {}
+    name(0, 0) {}
 };
 
 class Buffer {

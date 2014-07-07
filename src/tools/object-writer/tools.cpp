@@ -45,7 +45,9 @@ void Buffer::write(const void* d, size_t size) {
 
 unsigned StringTable::add(String str) {
   unsigned offset = Buffer::length;
-  Buffer::write(str.text, str.length + 1);
+  Buffer::write(str.begin(), str.count);
+  char zero = 0;
+  Buffer::write(&zero, 1);
   return offset;
 }
 

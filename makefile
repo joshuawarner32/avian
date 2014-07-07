@@ -394,7 +394,7 @@ endif
 build-cflags = $(common-cflags) -fPIC -fvisibility=hidden \
 	"-I$(JAVA_HOME)/include/linux" -I$(src) -pthread
 
-converter-cflags = -D__STDC_CONSTANT_MACROS -Iinclude/ -Isrc/ \
+binary-to-object-cflags = -D__STDC_CONSTANT_MACROS -Iinclude/ -Isrc/ \
 	-fno-rtti -fno-exceptions \
 	-DAVIAN_TARGET_ARCH=AVIAN_ARCH_UNKNOWN \
 	-DAVIAN_TARGET_FORMAT=AVIAN_FORMAT_UNKNOWN \
@@ -1058,7 +1058,7 @@ endif
 
 ifeq ($(mode),debug)
 	optimization-cflags = $(cflags_debug)
-	converter-cflags += $(cflags_debug)
+	binary-to-object-cflags += $(cflags_debug)
 	strip = :
 endif
 ifeq ($(mode),debug-fast)
@@ -1138,7 +1138,8 @@ vm-sources = \
 	$(src)/classpath-$(classpath).cpp \
 	$(src)/builtin.cpp \
 	$(src)/jnienv.cpp \
-	$(src)/process.cpp
+	$(src)/process.cpp \
+	$(src)/util/string.cpp
 
 vm-asm-sources = $(src)/$(asm).$(asm-format)
 
@@ -1322,20 +1323,13 @@ all-depends = $(shell find include -name '*.h')
 
 object-writer-depends = $(shell find $(src)/tools/object-writer -name '*.h')
 object-writer-sources = $(shell find $(src)/tools/object-writer -name '*.cpp')
-object-writer-objects = $(call cpp-objects,$(object-writer-sources),$(src),$(build))
+object-writer-objects = $(call cpp-objects,$(object-writer-sources),$(src),$(build)/host)
 
-binary-to-object-depends = $(shell find $(src)/tools/binary-to-object/ -name '*.h')
-binary-to-object-sources = $(shell find $(src)/tools/binary-to-object/ -name '*.cpp')
-binary-to-object-objects = $(call cpp-objects,$(binary-to-object-sources),$(src),$(build))
+binary-to-object-depends = $(all-depends)
+binary-to-object-sources = $(shell find $(src)/tools/binary-to-object/ -name '*.cpp') $(src)/util/string.cpp
+binary-to-object-objects = $(call cpp-objects,$(binary-to-object-sources),$(src),$(build)/host)
 
-converter-sources = $(object-writer-sources)
-
-converter-tool-depends = $(binary-to-object-depends) $(all-depends)
-converter-tool-sources = $(binary-to-object-sources)
-
-converter-objects = $(call cpp-objects,$(converter-sources),$(src),$(build))
-converter-tool-objects = $(call cpp-objects,$(converter-tool-sources),$(src),$(build))
-converter = $(build)/binaryToObject/binaryToObject
+binary-to-object = $(build)/binaryToObject/binaryToObject
 
 static-library = $(build)/$(static-prefix)$(name)$(static-suffix)
 executable = $(build)/$(name)${exe-suffix}
@@ -1714,9 +1708,9 @@ $(build-embed)/%.o: $(src)/%.cpp
 	@mkdir -p $(dir $(@))
 	$(cxx) $(cflags) -c $(<) $(call output,$(@))
 
-$(embed-loader-o): $(embed-loader) $(converter)
+$(embed-loader-o): $(embed-loader) $(binary-to-object)
 	@mkdir -p $(dir $(@))
-	$(converter) $(<) $(@) _binary_loader_start \
+	$(binary-to-object) $(<) $(@) _binary_loader_start \
 		_binary_loader_end $(target-format) $(arch)
 
 $(embed-loader): $(embed-loader-objects) $(vm-objects) $(classpath-objects) \
@@ -1770,11 +1764,11 @@ $(boot-object): $(boot-source)
 $(boot-javahome-object): $(src)/boot-javahome.cpp
 	$(compile-object)
 
-$(object-writer-objects) $(binary-to-object-objects): $(build)/%.o: $(src)/%.cpp $(binary-to-object-depends) $(object-writer-depends) $(all-depends)
+$(object-writer-objects) $(binary-to-object-objects): $(build)/host/%.o: $(src)/%.cpp $(binary-to-object-depends) $(object-writer-depends) $(all-depends)
 	@mkdir -p $(dir $(@))
-	$(build-cxx) $(converter-cflags) -c $(<) -o $(@)
+	$(build-cxx) $(binary-to-object-cflags) -c $(<) -o $(@)
 
-$(converter): $(converter-objects) $(converter-tool-objects)
+$(binary-to-object): $(object-writer-objects) $(binary-to-object-objects)
 	@mkdir -p $(dir $(@))
 	$(build-cc) $(^) -g -o $(@)
 
@@ -1794,9 +1788,9 @@ $(build)/classpath.jar: $(classpath-dep) $(classpath-jar-dep)
 	 cd $(classpath-build) && \
 	 $(jar) c0f "$$($(native-path) "$${wd}/$(@)")" .)
 
-$(classpath-object): $(build)/classpath.jar $(converter)
+$(classpath-object): $(build)/classpath.jar $(binary-to-object)
 	@echo "creating $(@)"
-	$(converter) $(<) $(@) _binary_classpath_jar_start \
+	$(binary-to-object) $(<) $(@) _binary_classpath_jar_start \
 		_binary_classpath_jar_end $(target-format) $(arch)
 
 $(build)/javahome.jar:
@@ -1805,9 +1799,9 @@ $(build)/javahome.jar:
 	 cd "$(build-javahome)" && \
 	 $(jar) c0f "$$($(native-path) "$${wd}/$(@)")" $(javahome-files))
 
-$(javahome-object): $(build)/javahome.jar $(converter)
+$(javahome-object): $(build)/javahome.jar $(binary-to-object)
 	@echo "creating $(@)"
-	$(converter) $(<) $(@) _binary_javahome_jar_start \
+	$(binary-to-object) $(<) $(@) _binary_javahome_jar_start \
 		_binary_javahome_jar_end $(target-format) $(arch)
 
 define compile-generator-object
@@ -1923,7 +1917,7 @@ $(bootimage-generator): $(bootimage-generator-objects) $(vm-objects)
 
 $(build-bootimage-generator): \
 		$(vm-objects) $(classpath-object) \
-		$(heapwalk-objects) $(bootimage-generator-objects) $(converter-objects) \
+		$(heapwalk-objects) $(bootimage-generator-objects) $(object-writer-objects) \
 		$(lzma-decode-objects) $(lzma-encode-objects)
 	@echo "linking $(@)"
 ifeq ($(platform),windows)
@@ -1977,7 +1971,7 @@ else
 endif
 	$(strip) $(strip-all) $(@)
 
-$(generator): $(generator-objects) $(generator-lzma-objects)
+$(generator): $(generator-objects) $(generator-lzma-objects) $(build)/host/util/string.o
 	@echo "linking $(@)"
 	$(build-ld) $(^) $(build-lflags) -o $(@)
 

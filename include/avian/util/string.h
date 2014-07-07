@@ -11,53 +11,32 @@
 #ifndef AVIAN_UTIL_STRING_H
 #define AVIAN_UTIL_STRING_H
 
-#include <string.h>
+#include "slice.h"
 
 namespace avian {
 namespace util {
 
-class String {
-public:
-  const char* text;
-  size_t length;
-
-  String(const char* text):
-    text(text),
-    length(strlen(text)) {}
-  
-  inline String(const char* text, size_t length):
-    text(text),
-    length(length) {}
-};
-
-class Tokenizer {
+class String : public Slice<const char> {
  public:
-
-  Tokenizer(const char* s, char delimiter):
-    s(s), limit(0), delimiter(delimiter)
-  { }
-
-  Tokenizer(String str, char delimiter):
-    s(str.text), limit(str.text + str.length), delimiter(delimiter)
-  { }
-
-  bool hasMore() {
-    while (s != limit and *s == delimiter) ++s;
-    return s != limit and *s != 0;
+  String(const char* text);
+  inline String(const char* text, size_t length)
+      : Slice<const char>(text, length)
+  {
   }
 
-  String next() {
-    const char* p = s;
-    while (s != limit and *s and *s != delimiter) ++s;
-    return String(p, s - p);
-  }
-
-  const char* s;
-  const char* limit;
-  char delimiter;
+  bool operator==(const String& o) const;
 };
 
-} // namespace util
-} // namespace avain
+inline bool operator==(const String& a, const char* b)
+{
+  return a == String(b);
+}
+inline bool operator==(const char* a, const String& b)
+{
+  return String(a) == b;
+}
 
-#endif//AVIAN_UTIL_STRING_H
+}  // namespace util
+}  // namespace avian
+
+#endif  // AVIAN_UTIL_STRING_H

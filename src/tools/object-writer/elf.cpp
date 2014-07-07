@@ -134,7 +134,7 @@ unsigned getElfPlatform(PlatformInfo::Architecture arch) {
   }
 }
 
-const char* getSectionName(unsigned accessFlags, unsigned& sectionFlags) {
+String getSectionName(unsigned accessFlags, unsigned& sectionFlags) {
   sectionFlags = SHF_ALLOC;
   if (accessFlags & Platform::Writable) {
     if (accessFlags & Platform::Executable) {
@@ -253,7 +253,7 @@ public:
 
     SectionWriter(FileWriter& file):
       file(file),
-      name(""),
+      name(0, 0),
       dataSize(0),
       data(0)
     {
@@ -266,7 +266,7 @@ public:
 
     SectionWriter(
         FileWriter& file,
-        const char* chname,
+        String chname,
         unsigned type,
         AddrTy flags,
         unsigned alignment,
@@ -281,7 +281,7 @@ public:
       dataSize(dataSize),
       data(data)
     {
-      if(strcmp(chname, ".shstrtab") == 0) {
+      if(chname == ".shstrtab") {
         file.sectionStringTableSectionNumber = file.sectionCount;
       }
       file.sectionCount++;
@@ -322,7 +322,7 @@ public:
   virtual bool writeObject(OutputStream* out, Slice<SymbolInfo> symbols, Slice<const uint8_t> data, unsigned accessFlags, unsigned alignment) {
 
     unsigned sectionFlags;
-    const char* sectionName = getSectionName(accessFlags, sectionFlags);
+    String sectionName = getSectionName(accessFlags, sectionFlags);
 
     StringTable symbolStringTable;
     Buffer symbolTable;
@@ -341,7 +341,7 @@ public:
     };
 
     // for some reason, string tables require a null first element...
-    symbolStringTable.add("");
+    symbolStringTable.add(String(0, 0));
 
     for(SymbolInfo* sym = symbols.begin(); sym != symbols.end(); sym++) {
       size_t nameOffset = symbolStringTable.add(sym->name);

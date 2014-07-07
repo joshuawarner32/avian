@@ -9,7 +9,7 @@
    details. */
 
 #include <avian/system/system.h>
-#include <avian/util/string.h>
+#include <avian/util/tokenizer.h>
 #include <avian/util/runtime-array.h>
 #include <avian/util/list.h>
 
@@ -663,13 +663,13 @@ addTokens(System* s, Element** first, Element** last, Allocator* allocator,
   for (Tokenizer t(String(tokens, tokensLength), ' '); t.hasMore();) {
     String token(t.next());
 
-    RUNTIME_ARRAY(char, n, jarNameBase + token.length + 1);
+    RUNTIME_ARRAY(char, n, jarNameBase + token.count + 1);
     memcpy(RUNTIME_ARRAY_BODY(n), jarName, jarNameBase);
-    memcpy(RUNTIME_ARRAY_BODY(n) + jarNameBase, token.text, token.length);
-    RUNTIME_ARRAY_BODY(n)[jarNameBase + token.length] = 0;
+    memcpy(RUNTIME_ARRAY_BODY(n) + jarNameBase, token.begin(), token.count);
+    RUNTIME_ARRAY_BODY(n)[jarNameBase + token.count] = 0;
           
     add(s, first, last, allocator, RUNTIME_ARRAY_BODY(n),
-        jarNameBase + token.length, bootLibrary);
+        jarNameBase + token.count, bootLibrary);
   }
 }
 
@@ -817,7 +817,7 @@ parsePath(System* s, Allocator* allocator, const char* path,
   for (Tokenizer t(path, s->pathSeparator()); t.hasMore();) {
     String token(t.next());
 
-    add(s, &first, &last, allocator, token.text, token.length, bootLibrary);
+    add(s, &first, &last, allocator, token.begin(), token.count, bootLibrary);
   }
 
   return first;

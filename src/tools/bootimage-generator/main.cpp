@@ -1294,9 +1294,9 @@ writeBootImage2(Thread* t, OutputStream* bootimageOutput, OutputStream* codeOutp
 
     String heapDup(const char* name) {
       String ret(name);
-      char* n = (char*)heap->allocate(ret.length + 1);
-      memcpy(n, ret.text, ret.length + 1);
-      ret.text = n;
+      char* n = (char*)heap->allocate(ret.count + 1);
+      memcpy(n, ret.begin(), ret.count + 1);
+      ret.items = n;
       return ret;
     }
 
@@ -1702,7 +1702,7 @@ writeBootImage2(Thread* t, OutputStream* bootimageOutput, OutputStream* codeOutp
     platform->writeObject(codeOutput, Slice<SymbolInfo>(compilationHandler.symbols), Slice<const uint8_t>(code, image->codeSize), Platform::Executable, TargetBytesPerWord);
 
     for(SymbolInfo* sym = compilationHandler.symbols.begin(); sym != compilationHandler.symbols.end() - 2; sym++) {
-      t->m->heap->free(const_cast<void*>((const void*)sym->name.text), sym->name.length + 1);
+      t->m->heap->free(const_cast<void*>((const void*)sym->name.begin()), sym->name.count + 1);
     }
   }
 }
