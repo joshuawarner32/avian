@@ -17,37 +17,31 @@
 namespace vm {
 
 inline const char* append(avian::util::Allocator* allocator,
-                          const char* a,
-                          const char* b,
-                          const char* c)
+                          avian::util::String a,
+                          avian::util::String b,
+                          avian::util::String c)
 {
-  unsigned al = strlen(a);
-  unsigned bl = strlen(b);
-  unsigned cl = strlen(c);
-  char* p = static_cast<char*>(allocator->allocate((al + bl + cl) + 1));
-  memcpy(p, a, al);
-  memcpy(p + al, b, bl);
-  memcpy(p + al + bl, c, cl + 1);
+  char* p = static_cast<char*>(allocator->allocate((a.count + b.count + c.count) + 1));
+  memcpy(p, a.begin(), a.count);
+  memcpy(p + a.count, b.begin(), b.count);
+  memcpy(p + a.count + b.count, c.begin(), c.count + 1);
   return p;
 }
 
 inline const char* append(avian::util::Allocator* allocator,
-                          const char* a,
-                          const char* b)
+                          avian::util::String a,
+                          avian::util::String b)
 {
-  unsigned al = strlen(a);
-  unsigned bl = strlen(b);
-  char* p = static_cast<char*>(allocator->allocate((al + bl) + 1));
-  memcpy(p, a, al);
-  memcpy(p + al, b, bl + 1);
+  char* p = static_cast<char*>(allocator->allocate((a.count + b.count) + 1));
+  memcpy(p, a.begin(), a.count);
+  memcpy(p + a.count, b.begin(), b.count + 1);
   return p;
 }
 
-inline const char* copy(avian::util::Allocator* allocator, const char* a)
+inline const char* copy(avian::util::Allocator* allocator, avian::util::String a)
 {
-  unsigned al = strlen(a);
-  char* p = static_cast<char*>(allocator->allocate(al + 1));
-  memcpy(p, a, al + 1);
+  char* p = static_cast<char*>(allocator->allocate(a.count + 1));
+  memcpy(p, a.begin(), a.count + 1);
   return p;
 }
 

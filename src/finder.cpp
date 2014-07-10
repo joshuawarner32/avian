@@ -30,14 +30,14 @@ class Element {
  public:
   class Iterator {
    public:
-    virtual const char* next(unsigned* size) = 0;
+    virtual avian::util::String next() = 0;
     virtual void dispose() = 0;
   };
 
   Element(): next(0) { }
 
   virtual Iterator* iterator() = 0;
-  virtual System::Region* find(const char* name) = 0;
+  virtual System::Region* find(avian::util::String name) = 0;
   virtual System::FileType stat(const char* name, unsigned* length,
                                 bool tryDirectory) = 0;
   virtual const char* urlPrefix() = 0;
@@ -60,10 +60,10 @@ class DirectoryElement: public Element {
       }
     }
 
-    virtual const char* next(unsigned* size) {
+    virtual avian::util::String next() {
       if (it) {
-        const char* v = it->next(size);
-        if (v) {
+        avian::util::String v = it->next();
+        if (v.begin()) {
           return v;
         } else {
           it->dispose();
@@ -86,8 +86,7 @@ class DirectoryElement: public Element {
               it->name = last;
             }
             const char* result = last + skip;
-            *size = strlen(result);
-            return result;
+            return avian::util::String(result);
           }
         }
       }
@@ -123,7 +122,7 @@ class DirectoryElement: public Element {
       Iterator(s, allocator, name, strlen(name) + 1);
   }
 
-  virtual System::Region* find(const char* name) {
+  virtual System::Region* find(avian::util::String name) {
     const char* file = append(allocator, this->name, "/", name);
     System::Region* region;
     System::Status status = s->map(&region, file);
@@ -420,11 +419,12 @@ class JarElement: public Element {
       s(s), allocator(allocator), index(index), position(0)
     { }
 
-    virtual const char* next(unsigned* size) {
+    virtual avian::util::String next() {
       if (position < index->position) {
         List<JarIndex::Entry>* n = index->nodes + (position++);
-        *size = fileNameLength(n->item.entry);
-        return reinterpret_cast<const char*>(fileName(n->item.entry));
+        return avian::util::String(
+            reinterpret_cast<const char*>(fileName(n->item.entry)),
+            fileNameLength(n->item.entry));
       } else {
         return 0;
       }
@@ -484,7 +484,7 @@ class JarElement: public Element {
     }
   }
 
-  virtual System::Region* find(const char* name) {
+  virtual System::Region* find(avian::util::String name) {
     init();
 
     while (*name == '/') name++;
@@ -830,10 +830,10 @@ class MyIterator: public Finder::IteratorImp {
     it(path ? path->iterator() : 0)
   { }
 
-  virtual const char* next(unsigned* size) {
+  virtual avian::util::String next() {
     while (it) {
-      const char* v = it->next(size);
-      if (v) {
+      avian::util::String v = it->next();
+      if (v.begin()) {
         return v;
       } else {
         it->dispose();
@@ -883,7 +883,7 @@ class MyFinder: public Finder {
       MyIterator(system, allocator, path_);
   }
 
-  virtual System::Region* find(const char* name) {
+  virtual System::Region* find(avian::util::String name) {
     for (Element* e = path_; e; e = e->next) {
       System::Region* r = e->find(name);
       if (r) {

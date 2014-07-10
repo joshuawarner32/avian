@@ -167,12 +167,18 @@ class TypeMap {
 //    of primitive classes before generating the heap image so that we
 //    need not populate them lazily at runtime.
 
-bool
-endsWith(const char* suffix, const char* s, unsigned length)
+bool endsWith(const char* suffix, avian::util::String s)
 {
   unsigned suffixLength = strlen(suffix);
-  return length >= suffixLength
-    and memcmp(suffix, s + (length - suffixLength), suffixLength) == 0;
+  return s.count >= suffixLength
+         and memcmp(suffix, s.begin() + (s.count - suffixLength), suffixLength) == 0;
+}
+
+bool beginsWith(const char* prefix, avian::util::String s)
+{
+  unsigned prefixLength = strlen(prefix);
+  return s.count >= prefixLength
+         and memcmp(prefix, s.begin() + (s.count - prefixLength), prefixLength) == 0;
 }
 
 object
@@ -315,15 +321,15 @@ makeCodeImage(Thread* t, Zone* zone, BootImage* image, uint8_t* code,
 
   for (Finder::Iterator it(finder); it.hasMore();) {
     unsigned nameSize = 0;
-    const char* name = it.next(&nameSize);
+    avian::util::String name = it.next();
 
-    if (endsWith(".class", name, nameSize)
-        and (className == 0 or strncmp(name, className, nameSize - 6) == 0))
+    if (endsWith(".class", name)
+        and (className == 0 or name.slice(0, name.count - 6) == className))
     {
       // fprintf(stderr, "pass 1 %.*s\n", nameSize - 6, name);
       object c = resolveSystemClass
         (t, root(t, Machine::BootLoader),
-         makeByteArray(t, "%.*s", nameSize - 6, name), true);
+         makeByteArray(t, "%.*s", nameSize - 6, name.begin()), true);
 
       PROTECT(t, c);
 

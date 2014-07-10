@@ -13,6 +13,7 @@
 
 #include "avian/common.h"
 #include <avian/system/system.h>
+#include <avian/util/string.h>
 
 namespace avian {
 namespace util {
@@ -130,7 +131,7 @@ class Finder {
  public:
   class IteratorImp {
    public:
-    virtual const char* next(unsigned* size) = 0;
+    virtual avian::util::String next() = 0;
     virtual void dispose() = 0;
   };
 
@@ -138,7 +139,7 @@ class Finder {
    public:
     Iterator(Finder* finder):
       it(finder->iterator()),
-      current(it->next(&currentSize))
+      current(it->next())
     { }
 
     ~Iterator() {
@@ -146,16 +147,15 @@ class Finder {
     }
 
     bool hasMore() {
-      if (current) return true;
-      current = it->next(&currentSize);
-      return current != 0;
+      if (current.begin()) return true;
+      current = it->next();
+      return current.begin() != 0;
     }
 
-    const char* next(unsigned* size) {
+    avian::util::String next() {
       if (hasMore()) {
-        *size = currentSize;
-        const char* v = current;
-        current = 0;
+        avian::util::String v = current;
+        current.items = 0;
         return v;
       } else {
         return 0;
@@ -163,12 +163,11 @@ class Finder {
     }
 
     IteratorImp* it;
-    const char* current;
-    unsigned currentSize;
+    avian::util::String current;
   };
 
   virtual IteratorImp* iterator() = 0;
-  virtual System::Region* find(const char* name) = 0;
+  virtual System::Region* find(avian::util::String name) = 0;
   virtual System::FileType stat(const char* name,
                                 unsigned* length,
                                 bool tryDirectory = false) = 0;

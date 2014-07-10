@@ -16,6 +16,9 @@
 namespace avian {
 namespace util {
 
+
+// A... String?
+// NOTE: Strings aren't null terminated!!!
 class String : public Slice<const char> {
  public:
   String(const char* text);

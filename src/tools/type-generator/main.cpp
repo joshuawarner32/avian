@@ -23,8 +23,6 @@
 
 #include "assert.h"
 
-#define UNREACHABLE abort()
-
 #define UNUSED __attribute__((unused))
 
 void operator delete(void*) { abort(); }
@@ -132,7 +130,7 @@ arrayElementSize(Object* o)
     return static_cast<Array*>(o)->elementSize;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -145,7 +143,7 @@ memberOwner(Object* o)
     return static_cast<Scalar*>(o)->owner;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -158,7 +156,7 @@ memberTypeName(Object* o)
     return static_cast<Scalar*>(o)->typeName;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -182,7 +180,7 @@ memberName(Object* o)
     return static_cast<Scalar*>(o)->name;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -194,7 +192,7 @@ memberSize(Object* o)
     return static_cast<Scalar*>(o)->elementSize;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -207,7 +205,7 @@ memberElementSize(Object* o)
     return static_cast<Scalar*>(o)->elementSize;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -220,7 +218,7 @@ memberNoAssert(Object* o)
     return static_cast<Scalar*>(o)->noassert;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -233,7 +231,7 @@ memberNoGC(Object* o)
     return static_cast<Scalar*>(o)->nogc;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -268,7 +266,7 @@ methodName(Object* o)
     return static_cast<Method*>(o)->name;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -280,7 +278,7 @@ methodSpec(Object* o)
     return static_cast<Method*>(o)->spec;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -316,7 +314,7 @@ typeName(Object* o)
     return static_cast<Type*>(o)->name;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -328,7 +326,7 @@ typeJavaName(Object* o)
     return static_cast<Type*>(o)->javaName;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -340,7 +338,7 @@ typeMembers(Object* o)
     return static_cast<Type*>(o)->members.first;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -352,7 +350,7 @@ typeMethods(Object* o)
     return static_cast<Type*>(o)->methods.first;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -364,7 +362,7 @@ typeOverridesMethods(Object* o)
     return static_cast<Type*>(o)->overridesMethods;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -381,7 +379,7 @@ addMember(Object* o, Object* member)
     break;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -403,7 +401,7 @@ addMethod(Object* o, Object* method)
     break;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -415,7 +413,7 @@ typeSuper(Object* o)
     return static_cast<Type*>(o)->super;
 
   default:
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -593,7 +591,7 @@ declaration(const char* name, Object* declarations)
       if (equal(name, typeName(o))) return o;
       break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
   }
   return 0;
@@ -609,7 +607,7 @@ javaDeclaration(const char* name, Object* declarations)
       if (typeJavaName(o) and equal(name, typeJavaName(o))) return o;
       break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
   }
   return 0;
@@ -706,7 +704,7 @@ class MemberIterator {
       alignment_ = 0;
     } break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
 
     offset_ += padding_;
@@ -1165,7 +1163,7 @@ writeOffset(Output* out, Object* offset, bool allocationStyle = false)
         wrote = true;
       } break;
 
-      default: UNREACHABLE;
+      default: UNREACHABLE_;
       }
     }
 
@@ -1271,7 +1269,7 @@ typeBodyOffset(Object* type, Object* offset)
       offset = cons(m, offset);
     } break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
   }
   unsigned padding = pad(BytesPerWord, it.alignment());
@@ -1326,7 +1324,7 @@ writeAccessors(Output* out, Object* declarations)
           offset = cons(m, offset);
         } break;
 
-        default: UNREACHABLE;
+        default: UNREACHABLE_;
         }
       }
     } break;
@@ -1349,7 +1347,7 @@ typeFixedSize(Object* type)
 
     case Object::Array: break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
   }
   return length;
@@ -1367,7 +1365,7 @@ typeArrayElementSize(Object* type)
       return memberElementSize(m);
     } break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
   }
   return 0;
@@ -1642,7 +1640,7 @@ set(uint32_t* mask, unsigned index)
   if (index < 32) {
     *mask |= 1 << index;
   } else {
-    UNREACHABLE;
+    UNREACHABLE_;
   }
 }
 
@@ -1671,7 +1669,7 @@ typeObjectMask(Object* type)
       }
     } break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
   }
 
@@ -1861,7 +1859,7 @@ writeMap(Output* out, Object* type)
       out->write(memberTypeEnumName(m));
     } break;
 
-    default: UNREACHABLE;
+    default: UNREACHABLE_;
     }
 
     out->write(", ");
