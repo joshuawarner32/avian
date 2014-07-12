@@ -52,8 +52,7 @@ class Type {
 
  public:
   constexpr Type(Flavor flavor, unsigned size)
-      : desc((static_cast<int>(flavor) & 0xff)
-             | ((size & 0xff) << 8))
+      : desc((static_cast<int>(flavor) & 0xff) | ((size & 0xff) << 8))
   {
   }
 
@@ -90,16 +89,16 @@ class Type {
 };
 
 namespace Types {
-  static constexpr Type Void = Type(Type::Flavor::Void, 0);
-  static constexpr Type Object = Type(Type::Flavor::Object, -1);
-  static constexpr Type Iptr = Type(Type::Flavor::Integer, -1);
-  static constexpr Type I1 = Type(Type::Flavor::Integer, 1);
-  static constexpr Type I2 = Type(Type::Flavor::Integer, 2);
-  static constexpr Type I4 = Type(Type::Flavor::Integer, 4);
-  static constexpr Type I8 = Type(Type::Flavor::Integer, 8);
-  static constexpr Type F4 = Type(Type::Flavor::Float, 4);
-  static constexpr Type F8 = Type(Type::Flavor::Float, 8);
-  static constexpr Type Addr = Type(Type::Flavor::Address, -1);
+static constexpr Type Void = Type(Type::Flavor::Void, 0);
+static constexpr Type Object = Type(Type::Flavor::Object, -1);
+static constexpr Type Iptr = Type(Type::Flavor::Integer, -1);
+static constexpr Type I1 = Type(Type::Flavor::Integer, 1);
+static constexpr Type I2 = Type(Type::Flavor::Integer, 2);
+static constexpr Type I4 = Type(Type::Flavor::Integer, 4);
+static constexpr Type I8 = Type(Type::Flavor::Integer, 8);
+static constexpr Type F4 = Type(Type::Flavor::Float, 4);
+static constexpr Type F8 = Type(Type::Flavor::Float, 8);
+static constexpr Type Addr = Type(Type::Flavor::Address, -1);
 };
 
 enum class ExtendMode { Signed, Unsigned };
