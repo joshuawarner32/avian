@@ -1256,7 +1256,7 @@ void appendCombine(Context* c,
     }
 
     appendCall(c,
-               value(c, ir::Type::addr(), constantSite(c, handler)),
+               value(c, ir::Types::Addr, constantSite(c, handler)),
                ir::CallingConvention::Native,
                0,
                0,
@@ -1407,7 +1407,7 @@ void appendTranslate(Context* c,
 
     appendCall(c,
                value(c,
-                     ir::Type::addr(),
+                     ir::Types::Addr,
                      constantSite(c,
                                   c->client->getThunk(
                                       op,
@@ -1846,9 +1846,9 @@ void appendBranch(Context* c,
               stackBase,
               slice);
 
-    Value* result = value(c, ir::Type::addr());
+    Value* result = value(c, ir::Types::Addr);
     appendCall(c,
-               value(c, ir::Type::addr(), constantSite(c, handler)),
+               value(c, ir::Types::Addr, constantSite(c, handler)),
                ir::CallingConvention::Native,
                0,
                0,
@@ -1858,7 +1858,7 @@ void appendBranch(Context* c,
     appendBranch(
         c,
         thunkBranch(c, op),
-        value(c, ir::Type::addr(), constantSite(c, static_cast<int64_t>(0))),
+        value(c, ir::Types::Addr, constantSite(c, static_cast<int64_t>(0))),
         result,
         addressValue);
   } else {

@@ -26,7 +26,7 @@ class TargetInfo {
 
 class Type {
  public:
-  enum Flavor {
+  enum class Flavor {
     // A GC-visiible reference
     Object,
 
@@ -47,64 +47,16 @@ class Type {
 
   typedef int16_t TypeDesc;
 
-#define TY_DESC(flavor, size) ((flavor & 0xff) | ((size & 0xff) << 8))
-  // TODO: once we upgrade to c++11, these should become plain constants (rather
-  // than function calls).
-  // The constructor will need to be declared 'constexpr'.
-  static inline Type void_()
-  {
-    return TY_DESC(Void, 0);
-  }
-  static inline Type object()
-  {
-    return TY_DESC(Object, -1);
-  }
-  static inline Type iptr()
-  {
-    return TY_DESC(Integer, -1);
-  }
-  static inline Type i1()
-  {
-    return TY_DESC(Integer, 1);
-  }
-  static inline Type i2()
-  {
-    return TY_DESC(Integer, 2);
-  }
-  static inline Type i4()
-  {
-    return TY_DESC(Integer, 4);
-  }
-  static inline Type i8()
-  {
-    return TY_DESC(Integer, 8);
-  }
-  static inline Type f4()
-  {
-    return TY_DESC(Float, 4);
-  }
-  static inline Type f8()
-  {
-    return TY_DESC(Float, 8);
-  }
-  static inline Type addr()
-  {
-    return TY_DESC(Address, -1);
-  }
-#undef TY_DESC
-
  private:
   TypeDesc desc;
 
-  friend class Types;
-
-  // TODO: once we move to c++11, declare this 'constexpr', to allow
-  // compile-time constants of this type.
-  /* constexpr */ Type(TypeDesc desc) : desc(desc)
+ public:
+  constexpr Type(Flavor flavor, unsigned size)
+      : desc((static_cast<int>(flavor) & 0xff)
+             | ((size & 0xff) << 8))
   {
   }
 
- public:
   inline Flavor flavor() const
   {
     return (Flavor)(desc & 0xff);
@@ -135,6 +87,19 @@ class Type {
   {
     return !(*this == other);
   }
+};
+
+namespace Types {
+  static constexpr Type Void = Type(Type::Flavor::Void, 0);
+  static constexpr Type Object = Type(Type::Flavor::Object, -1);
+  static constexpr Type Iptr = Type(Type::Flavor::Integer, -1);
+  static constexpr Type I1 = Type(Type::Flavor::Integer, 1);
+  static constexpr Type I2 = Type(Type::Flavor::Integer, 2);
+  static constexpr Type I4 = Type(Type::Flavor::Integer, 4);
+  static constexpr Type I8 = Type(Type::Flavor::Integer, 8);
+  static constexpr Type F4 = Type(Type::Flavor::Float, 4);
+  static constexpr Type F8 = Type(Type::Flavor::Float, 8);
+  static constexpr Type Addr = Type(Type::Flavor::Address, -1);
 };
 
 enum class ExtendMode { Signed, Unsigned };

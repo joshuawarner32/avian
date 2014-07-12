@@ -1304,14 +1304,14 @@ unsigned typeFootprint(Context* c, ir::Type type)
 {
   // TODO: this function is very Java-specific in nature. Generalize.
   switch (type.flavor()) {
-  case ir::Type::Float:
-  case ir::Type::Integer:
+  case ir::Type::Flavor::Float:
+  case ir::Type::Flavor::Integer:
     return type.rawSize() / 4;
-  case ir::Type::Object:
-  case ir::Type::Address:
-  case ir::Type::Half:
+  case ir::Type::Flavor::Object:
+  case ir::Type::Flavor::Address:
+  case ir::Type::Flavor::Half:
     return 1;
-  case ir::Type::Void:
+  case ir::Type::Flavor::Void:
     return 0;
   default:
     abort(c);
@@ -1344,7 +1344,7 @@ Value* loadLocal(Context* c, ir::Type type, unsigned index)
 Value* threadRegister(Context* c)
 {
   Site* s = registerSite(c, c->arch->thread());
-  return value(c, ir::Type::addr(), s, s);
+  return value(c, ir::Types::Addr, s, s);
 }
 
 unsigned frameFootprint(Context* c, Stack* s)
@@ -1614,7 +1614,7 @@ bool resolveOriginalSites(Context* c,
                 el.frameIndex(c));
       }
 
-      Value dummy(0, 0, ir::Type::addr());
+      Value dummy(0, 0, ir::Types::Addr);
       dummy.addSite(c, s);
       dummy.removeSite(c, s);
       freeze(c, frozen, s, 0);
@@ -2453,7 +2453,7 @@ class MyCompiler : public Compiler {
       assertT(&c, footprint == 2);
       assertT(&c, static_cast<Value*>(value)->nextWord);
 
-      save(ir::Type::i4(), static_cast<Value*>(value)->nextWord);
+      save(ir::Types::I4, static_cast<Value*>(value)->nextWord);
     }
   }
 
@@ -2729,7 +2729,7 @@ class MyCompiler : public Compiler {
   virtual ir::Value* truncate(ir::Type type, ir::Value* src)
   {
     assertT(&c, src->type.flavor() == type.flavor());
-    assertT(&c, type.flavor() != ir::Type::Float);
+    assertT(&c, type.flavor() != ir::Type::Flavor::Float);
     assertT(&c, type.rawSize() < src->type.rawSize());
     Value* dst = value(&c, type);
     appendMove(&c,
@@ -2802,7 +2802,7 @@ class MyCompiler : public Compiler {
             or (isFloatBranch(op) and isFloatValue(a) and isFloatValue(b)));
 
     assertT(&c, a->type == b->type);
-    assertT(&c, addr->type == ir::Type::iptr());
+    assertT(&c, addr->type == ir::Types::Iptr);
 
     appendBranch(&c,
                  op,
@@ -2850,7 +2850,7 @@ class MyCompiler : public Compiler {
   virtual ir::Value* f2f(ir::Type resType, ir::Value* a)
   {
     assertT(&c, isFloatValue(a));
-    assertT(&c, resType.flavor() == ir::Type::Float);
+    assertT(&c, resType.flavor() == ir::Type::Flavor::Float);
     Value* result = value(&c, resType);
     appendTranslate(&c, lir::Float2Float, static_cast<Value*>(a), result);
     return result;
@@ -2859,7 +2859,7 @@ class MyCompiler : public Compiler {
   virtual ir::Value* f2i(ir::Type resType, ir::Value* a)
   {
     assertT(&c, isFloatValue(a));
-    assertT(&c, resType.flavor() != ir::Type::Float);
+    assertT(&c, resType.flavor() != ir::Type::Flavor::Float);
     Value* result = value(&c, resType);
     appendTranslate(&c, lir::Float2Int, static_cast<Value*>(a), result);
     return result;
@@ -2868,7 +2868,7 @@ class MyCompiler : public Compiler {
   virtual ir::Value* i2f(ir::Type resType, ir::Value* a)
   {
     assertT(&c, isGeneralValue(a));
-    assertT(&c, resType.flavor() == ir::Type::Float);
+    assertT(&c, resType.flavor() == ir::Type::Flavor::Float);
     Value* result = value(&c, resType);
     appendTranslate(&c, lir::Int2Float, static_cast<Value*>(a), result);
     return result;

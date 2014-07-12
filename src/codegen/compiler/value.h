@@ -67,7 +67,7 @@ class Value : public ir::Value {
 
 inline bool isFloatValue(ir::Value* a)
 {
-  return static_cast<Value*>(a)->type.flavor() == ir::Type::Float;
+  return static_cast<Value*>(a)->type.flavor() == ir::Type::Flavor::Float;
 }
 
 inline bool isGeneralValue(ir::Value* a)
