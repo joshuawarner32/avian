@@ -3572,7 +3572,7 @@ ir::Value* popLongAddress(Frame* frame)
 {
   return TargetBytesPerWord == 8
              ? frame->popLarge(ir::Type::i8())
-             : frame->c->load(ir::SignExtend,
+             : frame->c->load(ir::ExtendMode::Signed,
                               frame->popLarge(ir::Type::i8()),
                               ir::Type::iptr());
 }
@@ -3613,7 +3613,7 @@ bool intrinsic(MyThread* t UNUSED, Frame* frame, GcMethod* target)
       ir::Value* address = popLongAddress(frame);
       frame->pop(ir::Type::object());
       frame->push(ir::Type::i4(),
-                  c->load(ir::SignExtend,
+                  c->load(ir::ExtendMode::Signed,
                           c->memory(address, ir::Type::i1()),
                           ir::Type::i4()));
       return true;
@@ -3631,7 +3631,7 @@ bool intrinsic(MyThread* t UNUSED, Frame* frame, GcMethod* target)
       ir::Value* address = popLongAddress(frame);
       frame->pop(ir::Type::object());
       frame->push(ir::Type::i4(),
-                  c->load(ir::SignExtend,
+                  c->load(ir::ExtendMode::Signed,
                           c->memory(address, ir::Type::i2()),
                           ir::Type::i4()));
       return true;
@@ -3653,7 +3653,7 @@ bool intrinsic(MyThread* t UNUSED, Frame* frame, GcMethod* target)
       ir::Type type = MATCH(target->name(), "getInt") ? ir::Type::i4()
                                                       : ir::Type::f4();
       frame->push(type,
-                  c->load(ir::SignExtend, c->memory(address, type), type));
+                  c->load(ir::ExtendMode::Signed, c->memory(address, type), type));
       return true;
     } else if ((MATCH(target->name(), "putInt")
                 and MATCH(target->spec(), "(JI)V"))
@@ -3675,7 +3675,7 @@ bool intrinsic(MyThread* t UNUSED, Frame* frame, GcMethod* target)
       ir::Type type = MATCH(target->name(), "getLong") ? ir::Type::i8()
                                                        : ir::Type::f8();
       frame->pushLarge(type,
-                       c->load(ir::SignExtend, c->memory(address, type), type));
+                       c->load(ir::ExtendMode::Signed, c->memory(address, type), type));
       return true;
     } else if ((MATCH(target->name(), "putLong")
                 and MATCH(target->spec(), "(JJ)V"))
@@ -3693,7 +3693,7 @@ bool intrinsic(MyThread* t UNUSED, Frame* frame, GcMethod* target)
       ir::Value* address = popLongAddress(frame);
       frame->pop(ir::Type::object());
       frame->pushLarge(ir::Type::i8(),
-                       c->load(ir::SignExtend,
+                       c->load(ir::ExtendMode::Signed,
                                c->memory(address, ir::Type::iptr()),
                                ir::Type::i8()));
       return true;
@@ -3974,7 +3974,7 @@ loop:
         frame->push(
             ir::Type::object(),
             c->load(
-                ir::SignExtend,
+                ir::ExtendMode::Signed,
                 c->memory(array, ir::Type::object(), TargetArrayBody, index),
                 ir::Type::object()));
         break;
@@ -3982,7 +3982,7 @@ loop:
       case faload:
         frame->push(
             ir::Type::f4(),
-            c->load(ir::SignExtend,
+            c->load(ir::ExtendMode::Signed,
                     c->memory(array, ir::Type::f4(), TargetArrayBody, index),
                     ir::Type::f4()));
         break;
@@ -3990,7 +3990,7 @@ loop:
       case iaload:
         frame->push(
             ir::Type::i4(),
-            c->load(ir::SignExtend,
+            c->load(ir::ExtendMode::Signed,
                     c->memory(array, ir::Type::i4(), TargetArrayBody, index),
                     ir::Type::i4()));
         break;
@@ -3998,7 +3998,7 @@ loop:
       case baload:
         frame->push(
             ir::Type::i4(),
-            c->load(ir::SignExtend,
+            c->load(ir::ExtendMode::Signed,
                     c->memory(array, ir::Type::i1(), TargetArrayBody, index),
                     ir::Type::i4()));
         break;
@@ -4006,7 +4006,7 @@ loop:
       case caload:
         frame->push(
             ir::Type::i4(),
-            c->load(ir::ZeroExtend,
+            c->load(ir::ExtendMode::Unsigned,
                     c->memory(array, ir::Type::i2(), TargetArrayBody, index),
                     ir::Type::i4()));
         break;
@@ -4014,7 +4014,7 @@ loop:
       case daload:
         frame->pushLarge(
             ir::Type::f8(),
-            c->load(ir::SignExtend,
+            c->load(ir::ExtendMode::Signed,
                     c->memory(array, ir::Type::f8(), TargetArrayBody, index),
                     ir::Type::f8()));
         break;
@@ -4022,7 +4022,7 @@ loop:
       case laload:
         frame->pushLarge(
             ir::Type::i8(),
-            c->load(ir::SignExtend,
+            c->load(ir::ExtendMode::Signed,
                     c->memory(array, ir::Type::i8(), TargetArrayBody, index),
                     ir::Type::i8()));
         break;
@@ -4030,7 +4030,7 @@ loop:
       case saload:
         frame->push(
             ir::Type::i4(),
-            c->load(ir::SignExtend,
+            c->load(ir::ExtendMode::Signed,
                     c->memory(array, ir::Type::i2(), TargetArrayBody, index),
                     ir::Type::i4()));
         break;
@@ -4188,7 +4188,7 @@ loop:
 
     case arraylength: {
       frame->push(ir::Type::i4(),
-                  c->load(ir::SignExtend,
+                  c->load(ir::ExtendMode::Signed,
                           c->memory(frame->pop(ir::Type::object()),
                                     ir::Type::iptr(),
                                     TargetArrayLength),
@@ -4507,7 +4507,7 @@ loop:
         case ByteField:
         case BooleanField:
           frame->push(ir::Type::i4(),
-                      c->load(ir::SignExtend,
+                      c->load(ir::ExtendMode::Signed,
                               c->memory(table,
                                         ir::Type::i1(),
                                         targetFieldOffset(context, field)),
@@ -4516,7 +4516,7 @@ loop:
 
         case CharField:
           frame->push(ir::Type::i4(),
-                      c->load(ir::ZeroExtend,
+                      c->load(ir::ExtendMode::Unsigned,
                               c->memory(table,
                                         ir::Type::i2(),
                                         targetFieldOffset(context, field)),
@@ -4525,7 +4525,7 @@ loop:
 
         case ShortField:
           frame->push(ir::Type::i4(),
-                      c->load(ir::SignExtend,
+                      c->load(ir::ExtendMode::Signed,
                               c->memory(table,
                                         ir::Type::i2(),
                                         targetFieldOffset(context, field)),
@@ -4534,7 +4534,7 @@ loop:
 
         case FloatField:
           frame->push(ir::Type::f4(),
-                      c->load(ir::SignExtend,
+                      c->load(ir::ExtendMode::Signed,
                               c->memory(table,
                                         ir::Type::f4(),
                                         targetFieldOffset(context, field)),
@@ -4543,7 +4543,7 @@ loop:
 
         case IntField:
           frame->push(ir::Type::i4(),
-                      c->load(ir::SignExtend,
+                      c->load(ir::ExtendMode::Signed,
                               c->memory(table,
                                         ir::Type::i4(),
                                         targetFieldOffset(context, field)),
@@ -4552,7 +4552,7 @@ loop:
 
         case DoubleField:
           frame->pushLarge(ir::Type::f8(),
-                           c->load(ir::SignExtend,
+                           c->load(ir::ExtendMode::Signed,
                                    c->memory(table,
                                              ir::Type::f8(),
                                              targetFieldOffset(context, field)),
@@ -4561,7 +4561,7 @@ loop:
 
         case LongField:
           frame->pushLarge(ir::Type::i8(),
-                           c->load(ir::SignExtend,
+                           c->load(ir::ExtendMode::Signed,
                                    c->memory(table,
                                              ir::Type::i8(),
                                              targetFieldOffset(context, field)),
@@ -4570,7 +4570,7 @@ loop:
 
         case ObjectField:
           frame->push(ir::Type::object(),
-                      c->load(ir::SignExtend,
+                      c->load(ir::ExtendMode::Signed,
                               c->memory(table,
                                         ir::Type::object(),
                                         targetFieldOffset(context, field)),
@@ -4660,7 +4660,7 @@ loop:
 
     case i2b: {
       frame->push(ir::Type::i4(),
-                  c->truncateThenExtend(ir::SignExtend,
+                  c->truncateThenExtend(ir::ExtendMode::Signed,
                                         ir::Type::i4(),
                                         ir::Type::i1(),
                                         frame->pop(ir::Type::i4())));
@@ -4668,7 +4668,7 @@ loop:
 
     case i2c: {
       frame->push(ir::Type::i4(),
-                  c->truncateThenExtend(ir::ZeroExtend,
+                  c->truncateThenExtend(ir::ExtendMode::Unsigned,
                                         ir::Type::i4(),
                                         ir::Type::i2(),
                                         frame->pop(ir::Type::i4())));
@@ -4686,7 +4686,7 @@ loop:
 
     case i2l:
       frame->pushLarge(ir::Type::i8(),
-                       c->truncateThenExtend(ir::SignExtend,
+                       c->truncateThenExtend(ir::ExtendMode::Signed,
                                              ir::Type::i8(),
                                              ir::Type::i4(),
                                              frame->pop(ir::Type::i4())));
@@ -4694,7 +4694,7 @@ loop:
 
     case i2s: {
       frame->push(ir::Type::i4(),
-                  c->truncateThenExtend(ir::SignExtend,
+                  c->truncateThenExtend(ir::ExtendMode::Signed,
                                         ir::Type::i4(),
                                         ir::Type::i2(),
                                         frame->pop(ir::Type::i4())));
@@ -6111,7 +6111,7 @@ next:
                                  0,
                                  normalizedKey);
 
-    c->jmp(c->load(ir::SignExtend,
+    c->jmp(c->load(ir::ExtendMode::Signed,
                    context->bootContext
                        ? c->binaryOp(lir::Add,
                                      ir::Type::iptr(),

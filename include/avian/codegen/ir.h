@@ -137,9 +137,9 @@ class Type {
   }
 };
 
-enum SignExtendMode { SignExtend, ZeroExtend };
+enum class ExtendMode { Signed, Unsigned };
 
-enum CallingConvention { NativeCallingConvention, AvianCallingConvention };
+enum class CallingConvention { Native, Avian };
 
 class Value {
  public:
