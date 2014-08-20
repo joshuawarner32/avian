@@ -77,6 +77,11 @@ javadoc {
   title = "Avian v${version} Class Library API"
 }
 
+jar {
+  exclude '*.cpp'
+  exclude '*.h'
+}
+
 task javadocJar(type: Jar) {
   dependsOn javadoc
   classifier = 'javadoc'
