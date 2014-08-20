@@ -108,7 +108,14 @@ wp8 ?= $(root)/wp8
 classpath = avian
 
 test-executable = $(shell pwd)/$(executable)
-boot-classpath = $(classpath-build)
+
+ifeq ($(classpath),avian)
+	boot-classpath = build/libs/avian-$(version).jar
+else
+	boot-classpath = $(build)/classpath.jar
+endif
+classpath-jar = $(boot-classpath)
+
 embed-prefix = /avian-embedded
 
 native-path = echo
@@ -1398,7 +1405,12 @@ endif
 classpath-classes = \
 	$(call java-classes,$(classpath-sources),$(classpath-src),$(classpath-build))
 classpath-object = $(build)/classpath-jar.o
-classpath-dep = $(classpath-build).dep
+
+ifeq ($(classpath),avian)
+	classpath-dep =
+else
+	classpath-dep = $(classpath-build).dep
+endif
 
 vm-classes = \
 	avian/*.class \
@@ -1476,11 +1488,11 @@ test-args = $(test-flags) $(input)
 ifneq ($(supports_avian_executable),false)
 build: $(static-library) $(executable) $(dynamic-library) $(lzma-loader) \
 	$(lzma-encoder) $(executable-dynamic) $(classpath-dep) $(test-dep) \
-	$(test-extra-dep) $(embed) $(build)/classpath.jar
+	$(test-extra-dep) $(embed) $(classpath-jar)
 else
 build: $(static-library) $(dynamic-library) $(lzma-loader) \
 	$(lzma-encoder) $(classpath-dep) $(test-dep) \
-	$(test-extra-dep) $(embed) $(build)/classpath.jar
+	$(test-extra-dep) $(embed) $(classpath-jar)
 endif
 
 $(test-dep): $(classpath-dep)
@@ -1517,7 +1529,7 @@ else
 endif
 
 .PHONY: jdk-test
-jdk-test: $(test-dep) $(build)/classpath.jar $(build)/jdk-run-tests.sh $(build)/test.sh
+jdk-test: $(test-dep) $(classpath-jar) $(build)/jdk-run-tests.sh $(build)/test.sh
 	/bin/sh $(build)/jdk-run-tests.sh
 
 .PHONY: tarball
@@ -1566,10 +1578,10 @@ $(build)/test.sh: $(test)/test.sh
 	cp $(<) $(@)
 
 gen-arg = $(shell echo $(1) | sed -e 's:$(build)/type-\(.*\)\.cpp:\1:')
-$(generated-code): %.cpp: $(src)/types.def $(generator) $(classpath-dep)
+$(generated-code): %.cpp: $(src)/types.def $(generator) $(classpath-jar)
 	@echo "generating $(@)"
 	@mkdir -p $(dir $(@))
-	$(generator) -cp $(boot-classpath) -i $(<) -o $(@) -t $(call gen-arg,$(@))
+	$(generator) -cp $(classpath-jar) -i $(<) -o $(@) -t $(call gen-arg,$(@))
 
 $(classpath-build)/%.class: $(classpath-src)/%.java
 	@echo $(<)
@@ -1787,13 +1799,16 @@ $(lzma-encoder): $(lzma-encoder-objects) $(lzma-encoder-lzma-objects)
 $(lzma-loader): $(src)/lzma/load.cpp
 	$(compile-object)
 
+build/libs/avian-$(version).jar: $(classpath-dep)
+	./gradlew jar
+
 $(build)/classpath.jar: $(classpath-dep) $(classpath-jar-dep)
 	@echo "creating $(@)"
 	(wd=$$(pwd) && \
 	 cd $(classpath-build) && \
 	 $(jar) c0f "$$($(native-path) "$${wd}/$(@)")" .)
 
-$(classpath-object): $(build)/classpath.jar $(converter)
+$(classpath-object): $(classpath-jar) $(converter)
 	@echo "creating $(@)"
 	$(converter) $(<) $(@) _binary_classpath_jar_start \
 		_binary_classpath_jar_end $(target-format) $(arch)
