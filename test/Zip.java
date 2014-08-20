@@ -27,7 +27,7 @@ public class Zip {
   
   public static void main(String[] args) throws Exception {
     ZipFile file = new ZipFile
-      (findJar(new File(System.getProperty("user.dir"))));
+      (findJar(new File(System.getProperty("user.dir")).getParentFile()));
 
     try {
       byte[] buffer = new byte[4096];
