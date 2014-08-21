@@ -1863,7 +1863,7 @@ endif
 $(bootimage-object) $(codeimage-object): $(bootimage-generator) \
 		$(classpath-jar-dep)
 	@echo "generating bootimage and codeimage binaries from $(classpath-build) using $(<)"
-	$(<) -cp $(classpath-build) -bootimage $(bootimage-object) -codeimage $(codeimage-object) \
+	$(<) -cp $(classpath-jar) -bootimage $(bootimage-object) -codeimage $(codeimage-object) \
 		-bootimage-symbols $(bootimage-symbols) \
 		-codeimage-symbols $(codeimage-symbols)
 

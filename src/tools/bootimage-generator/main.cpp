@@ -364,7 +364,12 @@ GcTriple* makeCodeImage(Thread* t,
 
       PROTECT(t, c);
 
-      System::Region* region = finder->find(name);
+      // TODO: this strndup is necessary because it.next (above) returns a
+      // non-null terminated string for jars, and this API expects one.  We
+      // should make this consistent across the board.
+      char* nameDup = strndup(name, nameSize);
+      System::Region* region = finder->find(nameDup);
+      free(nameDup);
 
       {
         THREAD_RESOURCE(t, System::Region*, region, region->dispose());
