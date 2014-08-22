@@ -186,6 +186,69 @@ jar {
   baseName "classpath-avian"
 }
 
+task openjdkJar(type: Jar) {
+  dependsOn jar
+
+  baseName "classpath-openjdk"
+
+  def overrides = [
+    "sun/reflect/ConstantPool*.class",
+    "java/lang/ReflectiveOperationException*.class",
+    "java/net/ProtocolFamily*.class",
+    "java/net/StandardProtocolFamily*.class",
+    "sun/misc/Cleaner*.class",
+    "sun/misc/Unsafe*.class",
+    "java/lang/reflect/Proxy*.class"
+  ]
+
+  def extras = [
+    "avian/Addendum*.class",
+    "avian/AnnotationInvocationHandler*.class",
+    "avian/Assembler*.class",
+    "avian/Callback*.class",
+    "avian/Cell*.class",
+    "avian/ClassAddendum*.class",
+    "avian/Classes*.class",
+    "avian/Code*.class",
+    "avian/ConstantPool*.class",
+    "avian/Continuations*.class",
+    "avian/FieldAddendum*.class",
+    "avian/Function*.class",
+    "avian/IncompatibleContinuationException*.class",
+    "avian/InnerClassReference*.class",
+    "avian/Machine*.class",
+    "avian/MethodAddendum*.class",
+    "avian/Pair*.class",
+    "avian/Singleton*.class",
+    "avian/Stream*.class",
+    "avian/SystemClassLoader*.class",
+    "avian/Traces*.class",
+    "avian/VMClass*.class",
+    "avian/VMField*.class",
+    "avian/VMMethod*.class",
+    "avian/avianvmresource/Handler*.class",
+    "avian/file/Handler*.class"
+  ]
+
+  from("${java_home}/jre/lib/rt.jar") {
+    exclude overrides
+  }
+
+  from zipTree("${java_home}/jre/lib/jsse.jar")
+  from zipTree("${java_home}/jre/lib/jce.jar")
+  from zipTree("${java_home}/jre/lib/charsets.jar")
+  from zipTree("${java_home}/jre/lib/ext/sunjce_provider.jar")
+  from zipTree("${java_home}/jre/lib/resources.jar")
+
+  // NOTE: using `from jar` instead causes these "include" clauses
+  // to actually filter classpath-avian.jar when this task is run.
+  // I suspect a bug in gradle.
+  from(zipTree(jar.archivePath)) {
+    include overrides
+    include extras
+  }
+}
+
 task install {
   dependsOn assemble, publish
 }
