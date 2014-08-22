@@ -109,12 +109,7 @@ classpath = avian
 
 test-executable = $(shell pwd)/$(executable)
 
-ifeq ($(classpath),avian)
-	boot-classpath = build/libs/classpath-avian-$(version).jar
-else
-	boot-classpath = $(build)/classpath.jar
-endif
-classpath-jar = $(boot-classpath)
+classpath-jar = build/libs/classpath-$(classpath)-$(version).jar
 
 embed-prefix = /avian-embedded
 
@@ -168,8 +163,8 @@ ifneq ($(openjdk),)
 		options := $(options)-openjdk-src
 		classpath-objects = $(openjdk-objects) $(openjdk-local-objects)
 		classpath-cflags = -DAVIAN_OPENJDK_SRC -DBOOT_JAVAHOME
-		openjdk-jar-dep = $(build)/openjdk-jar.dep
-		classpath-jar-dep = $(openjdk-jar-dep)
+		# openjdk-jar-dep = $(build)/openjdk-jar.dep
+		# classpath-jar-dep = $(openjdk-jar-dep)
 		javahome = $(embed-prefix)/javahomeJar
 		javahome-files = lib/currency.data lib/security/java.security \
 			lib/security/java.policy lib/security/cacerts
@@ -1406,12 +1401,6 @@ classpath-classes = \
 	$(call java-classes,$(classpath-sources),$(classpath-src),$(classpath-build))
 classpath-object = $(build)/classpath-jar.o
 
-ifeq ($(classpath),avian)
-	classpath-dep =
-else
-	classpath-dep = $(classpath-build).dep
-endif
-
 vm-classes = \
 	avian/*.class \
 	avian/resource/*.class
@@ -1487,17 +1476,13 @@ test-args = $(test-flags) $(input)
 .PHONY: build
 ifneq ($(supports_avian_executable),false)
 build: $(static-library) $(executable) $(dynamic-library) $(lzma-loader) \
-	$(lzma-encoder) $(executable-dynamic) $(classpath-dep) $(test-dep) \
+	$(lzma-encoder) $(executable-dynamic) $(test-dep) \
 	$(test-extra-dep) $(embed) $(classpath-jar)
 else
 build: $(static-library) $(dynamic-library) $(lzma-loader) \
-	$(lzma-encoder) $(classpath-dep) $(test-dep) \
+	$(lzma-encoder) $(test-dep) \
 	$(test-extra-dep) $(embed) $(classpath-jar)
 endif
-
-$(test-dep): $(classpath-dep)
-
-$(test-extra-dep): $(classpath-dep)
 
 .PHONY: run
 run: build
@@ -1583,19 +1568,6 @@ $(generated-code): %.cpp: $(src)/types.def $(generator) $(classpath-jar)
 	@mkdir -p $(dir $(@))
 	$(generator) -cp $(classpath-jar) -i $(<) -o $(@) -t $(call gen-arg,$(@))
 
-$(classpath-build)/%.class: $(classpath-src)/%.java
-	@echo $(<)
-
-$(classpath-dep): $(classpath-sources) $(classpath-jar-dep)
-	@echo "compiling classpath classes"
-	@mkdir -p $(classpath-build)
-	classes="$(shell $(MAKE) -s --no-print-directory build=$(build) \
-		$(classpath-classes))"; if [ -n "$${classes}" ]; then \
-		$(javac) -source 1.6 -target 1.6 \
-		  -d $(classpath-build) -bootclasspath $(boot-classpath) \
-		$${classes}; fi
-	@touch $(@)
-
 $(build)/android-src/%.cpp: $(luni-native)/%.cpp
 	cp $(<) $(@)
 
@@ -1646,10 +1618,10 @@ $(test-dep): $(test-sources) $(test-library)
 	files="$(shell $(MAKE) -s --no-print-directory build=$(build) $(test-classes))"; \
 	if test -n "$${files}"; then \
 		$(javac) -source 1.6 -target 1.6 \
-		  -classpath $(test-build) -d $(test-build) -bootclasspath $(boot-classpath) $${files}; \
+		  -classpath $(test-build) -d $(test-build) -bootclasspath $(classpath-jar) $${files}; \
 	fi
 	$(javac) -source 1.2 -target 1.1 -XDjsrlimit=0 -d $(test-build) \
-		-bootclasspath $(boot-classpath) test/Subroutine.java
+		-bootclasspath $(classpath-jar) test/Subroutine.java
 	@touch $(@)
 
 $(test-extra-dep): $(test-extra-sources)
@@ -1658,7 +1630,7 @@ $(test-extra-dep): $(test-extra-sources)
 	files="$(shell $(MAKE) -s --no-print-directory build=$(build) $(test-extra-classes))"; \
 	if test -n "$${files}"; then \
 		$(javac) -source 1.6 -target 1.6 \
-		  -d $(test-build) -bootclasspath $(boot-classpath) $${files}; \
+		  -d $(test-build) -bootclasspath $(classpath-jar) $${files}; \
 	fi
 	@touch $(@)
 
@@ -1799,14 +1771,11 @@ $(lzma-encoder): $(lzma-encoder-objects) $(lzma-encoder-lzma-objects)
 $(lzma-loader): $(src)/lzma/load.cpp
 	$(compile-object)
 
-build/libs/classpath-avian-$(version).jar: $(classpath-dep)
+build/libs/classpath-avian-$(version).jar: $(classpath-sources)
 	./gradlew jar
 
-$(build)/classpath.jar: $(classpath-dep) $(classpath-jar-dep)
-	@echo "creating $(@)"
-	(wd=$$(pwd) && \
-	 cd $(classpath-build) && \
-	 $(jar) c0f "$$($(native-path) "$${wd}/$(@)")" .)
+build/libs/classpath-openjdk-$(version).jar: $(classpath-sources)
+	./gradlew openjdkJar
 
 $(classpath-object): $(classpath-jar) $(converter)
 	@echo "creating $(@)"
@@ -2094,15 +2063,3 @@ ifeq ($(kernel),darwin)
 endif
 	@touch $(@)
 
-$(openjdk-jar-dep):
-	@echo "extracting openjdk classes"
-	@mkdir -p $(dir $(@))
-	@mkdir -p $(classpath-build)
-	(cd $(classpath-build) && \
-		$(jar) xf "$$($(native-path) "$(openjdk)/jre/lib/rt.jar")" && \
-		$(jar) xf "$$($(native-path) "$(openjdk)/jre/lib/jsse.jar")" && \
-		$(jar) xf "$$($(native-path) "$(openjdk)/jre/lib/jce.jar")" && \
-		$(jar) xf "$$($(native-path) "$(openjdk)/jre/lib/charsets.jar")" && \
-		$(jar) xf "$$($(native-path) "$(openjdk)/jre/lib/ext/sunjce_provider.jar")" && \
-		$(jar) xf "$$($(native-path) "$(openjdk)/jre/lib/resources.jar")")
-	@touch $(@)
