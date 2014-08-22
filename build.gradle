@@ -163,6 +163,21 @@ sourceSets {
       srcDir 'classpath'
     }
   }
+
+  if(project.hasProperty('androidRoot')) {
+    android {
+      java {
+        srcDir "${androidRoot}/libcore/luni/src/main/java"
+        srcDir "${androidRoot}/libcore/libdvm/src/main/java"
+        srcDir "${androidRoot}/libcore/crypto/src/main/java"
+        srcDir "${androidRoot}/libcore/dalvik/src/main/java"
+        srcDir "${androidRoot}/libcore/xml/src/main/java"
+      }
+      resources {
+        srcDir "${androidRoot}/libcore/luni/src/main/java"
+      }
+    }
+  }
 }
 
 javadoc {
@@ -186,39 +201,41 @@ jar {
   baseName "classpath-avian"
 }
 
+
+
+def classpathExtras = [
+  "avian/Addendum*.class",
+  "avian/AnnotationInvocationHandler*.class",
+  "avian/Assembler*.class",
+  "avian/Callback*.class",
+  "avian/Cell*.class",
+  "avian/ClassAddendum*.class",
+  "avian/Classes*.class",
+  "avian/Code*.class",
+  "avian/ConstantPool*.class",
+  "avian/Continuations*.class",
+  "avian/FieldAddendum*.class",
+  "avian/Function*.class",
+  "avian/IncompatibleContinuationException*.class",
+  "avian/InnerClassReference*.class",
+  "avian/Machine*.class",
+  "avian/MethodAddendum*.class",
+  "avian/Pair*.class",
+  "avian/Singleton*.class",
+  "avian/Stream*.class",
+  "avian/SystemClassLoader*.class",
+  "avian/Traces*.class",
+  "avian/VMClass*.class",
+  "avian/VMField*.class",
+  "avian/VMMethod*.class",
+  "avian/avianvmresource/Handler*.class",
+  "avian/file/Handler*.class"
+]
+
 task openjdkJar(type: Jar) {
   dependsOn jar
 
   baseName "classpath-openjdk"
-
-  def extras = [
-    "avian/Addendum*.class",
-    "avian/AnnotationInvocationHandler*.class",
-    "avian/Assembler*.class",
-    "avian/Callback*.class",
-    "avian/Cell*.class",
-    "avian/ClassAddendum*.class",
-    "avian/Classes*.class",
-    "avian/Code*.class",
-    "avian/ConstantPool*.class",
-    "avian/Continuations*.class",
-    "avian/FieldAddendum*.class",
-    "avian/Function*.class",
-    "avian/IncompatibleContinuationException*.class",
-    "avian/InnerClassReference*.class",
-    "avian/Machine*.class",
-    "avian/MethodAddendum*.class",
-    "avian/Pair*.class",
-    "avian/Singleton*.class",
-    "avian/Stream*.class",
-    "avian/SystemClassLoader*.class",
-    "avian/Traces*.class",
-    "avian/VMClass*.class",
-    "avian/VMField*.class",
-    "avian/VMMethod*.class",
-    "avian/avianvmresource/Handler*.class",
-    "avian/file/Handler*.class"
-  ]
 
   from(zipTree("${java_home}/jre/lib/rt.jar"))
 
@@ -232,7 +249,29 @@ task openjdkJar(type: Jar) {
   // to actually filter classpath-avian.jar when this task is run.
   // I suspect a bug in gradle.
   from(zipTree(jar.archivePath)) {
-    include extras
+    include classpathExtras
+  }
+}
+
+if(project.hasProperty('androidRoot')) {
+  task androidJar(type: Jar) {
+    dependsOn jar
+
+    baseName "classpath-android"
+
+    from(sourceSets.android.output) {
+      exclude "sun/misc/Unsafe*"
+      exclude "java/lang/reflect/Proxy*"
+      exclude "java/security/security.properties"
+    }
+
+    from(sourceSets.android.output) {
+      include "java/security/security.properties"
+
+      filter { line ->
+        line.replaceAll("com.android.org", "org")
+      }
+    }
   }
 }
 
