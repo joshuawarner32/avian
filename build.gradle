@@ -191,15 +191,6 @@ task openjdkJar(type: Jar) {
 
   baseName "classpath-openjdk"
 
-  def overrides = [
-    "java/lang/ReflectiveOperationException*.class",
-    "java/net/ProtocolFamily*.class",
-    "java/net/StandardProtocolFamily*.class",
-    "sun/misc/Cleaner*.class",
-    "sun/misc/Unsafe*.class",
-    "java/lang/reflect/Proxy*.class"
-  ]
-
   def extras = [
     "avian/Addendum*.class",
     "avian/AnnotationInvocationHandler*.class",
@@ -229,9 +220,7 @@ task openjdkJar(type: Jar) {
     "avian/file/Handler*.class"
   ]
 
-  from(zipTree("${java_home}/jre/lib/rt.jar")) {
-    exclude overrides
-  }
+  from(zipTree("${java_home}/jre/lib/rt.jar"))
 
   from zipTree("${java_home}/jre/lib/jsse.jar")
   from zipTree("${java_home}/jre/lib/jce.jar")
@@ -243,7 +232,6 @@ task openjdkJar(type: Jar) {
   // to actually filter classpath-avian.jar when this task is run.
   // I suspect a bug in gradle.
   from(zipTree(jar.archivePath)) {
-    include overrides
     include extras
   }
 }
