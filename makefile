@@ -1208,7 +1208,7 @@ all-codegen-target-objects = $(call cpp-objects,$(all-codegen-target-sources),$(
 vm-asm-objects = $(call asm-objects,$(vm-asm-sources),$(src),$(build))
 vm-objects = $(vm-cpp-objects) $(vm-asm-objects)
 
-heapwalk-sources = $(src)/heapwalk.cpp 
+heapwalk-sources = $(src)/heapwalk.cpp
 heapwalk-objects = \
 	$(call cpp-objects,$(heapwalk-sources),$(src),$(build))
 
@@ -1351,54 +1351,8 @@ executable-dynamic = $(build)/$(name)-dynamic$(exe-suffix)
 
 unittest-executable = $(build)/$(name)-unittest${exe-suffix}
 
-ifneq ($(classpath),avian)
-# Assembler, ConstantPool, and Stream are not technically needed for a
-# working build, but we include them since our Subroutine test uses
-# them to synthesize a class:
-	classpath-sources := \
-		$(classpath-src)/avian/Addendum.java \
-		$(classpath-src)/avian/AnnotationInvocationHandler.java \
-		$(classpath-src)/avian/Assembler.java \
-		$(classpath-src)/avian/Callback.java \
-		$(classpath-src)/avian/Cell.java \
-		$(classpath-src)/avian/ClassAddendum.java \
-		$(classpath-src)/avian/Classes.java \
-		$(classpath-src)/avian/Code.java \
-		$(classpath-src)/avian/ConstantPool.java \
-		$(classpath-src)/avian/Continuations.java \
-		$(classpath-src)/avian/FieldAddendum.java \
-		$(classpath-src)/avian/Function.java \
-		$(classpath-src)/avian/IncompatibleContinuationException.java \
-		$(classpath-src)/avian/InnerClassReference.java \
-		$(classpath-src)/avian/Machine.java \
-		$(classpath-src)/avian/MethodAddendum.java \
-		$(classpath-src)/avian/Pair.java \
-		$(classpath-src)/avian/Singleton.java \
-		$(classpath-src)/avian/Stream.java \
-		$(classpath-src)/avian/SystemClassLoader.java \
-		$(classpath-src)/avian/Traces.java \
-		$(classpath-src)/avian/VMClass.java \
-		$(classpath-src)/avian/VMField.java \
-		$(classpath-src)/avian/VMMethod.java \
-		$(classpath-src)/avian/avianvmresource/Handler.java \
-		$(classpath-src)/avian/file/Handler.java
+classpath-sources := $(shell find $(classpath-src) -name '*.java')
 
-	ifeq ($(openjdk),)
-		classpath-sources := $(classpath-sources) \
-			$(classpath-src)/sun/reflect/ConstantPool.java \
-			$(classpath-src)/java/lang/ReflectiveOperationException.java \
-			$(classpath-src)/java/net/ProtocolFamily.java \
-			$(classpath-src)/java/net/StandardProtocolFamily.java \
-			$(classpath-src)/sun/misc/Cleaner.java \
-			$(classpath-src)/sun/misc/Unsafe.java \
-			$(classpath-src)/java/lang/reflect/Proxy.java
-	endif
-else
-	classpath-sources := $(shell find $(classpath-src) -name '*.java')
-endif
-
-classpath-classes = \
-	$(call java-classes,$(classpath-sources),$(classpath-src),$(classpath-build))
 classpath-object = $(build)/classpath-jar.o
 
 vm-classes = \
@@ -1587,27 +1541,11 @@ $(build)/android.dep: $(luni-javas) $(libdvm-javas) $(crypto-javas) \
 		$(dalvik-javas) $(xml-javas) $(luni-nonjavas)
 	@echo "compiling luni classes"
 	@mkdir -p $(classpath-build)
-	@mkdir -p $(build)/android
 	@mkdir -p $(build)/android-src/external/fdlibm
 	@mkdir -p $(build)/android-src/libexpat
 	cp $(android)/external/fdlibm/fdlibm.h $(build)/android-src/external/fdlibm/
 	cp $(android)/external/expat/lib/expat*.h $(build)/android-src/libexpat/
-	cp -a $(luni-java)/* $(libdvm-java)/* $(crypto-java)/* $(dalvik-java)/* \
-		$(xml-java)/* $(build)/android-src/
-	find $(build)/android-src -name '*.java' > $(build)/android.txt
-	$(javac) -Xmaxerrs 1000 -d $(build)/android -sourcepath $(luni-java) \
-		@$(build)/android.txt
-	rm $(build)/android/sun/misc/Unsafe* \
-		$(build)/android/java/lang/reflect/Proxy*
-	for x in $(luni-copied-nonjavas); \
-		do cp $(luni-java)$${x} $(build)/android$${x} ; \
-	done
-	# fix security.properties - get rid of "com.android" in front of classes starting with "org"
-	sed -i -e 's/\(.*=\)com\.android\.\(org\..*\)/\1\2/g' \
-		$(build)/android/java/security/security.properties
-	chmod +w $(build)/android/java/security/security.properties
-	cp -r $(build)/android/* $(classpath-build)
-	@touch $(@)	
+	@touch $(@)
 
 $(test-build)/%.class: $(test)/%.java
 	@echo $(<)
