@@ -1775,7 +1775,7 @@ build/libs/classpath-avian-$(version).jar: $(classpath-sources)
 	./gradlew jar
 
 build/libs/classpath-openjdk-$(version).jar: $(classpath-sources)
-	./gradlew openjdkJar
+	./gradlew openjdkJar -Pjava_home=$(openjdk)
 
 build/libs/classpath-android-$(version).jar: $(classpath-sources)
 	./gradlew androidJar -PandroidRoot=$(android)
