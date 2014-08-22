@@ -110,7 +110,7 @@ classpath = avian
 test-executable = $(shell pwd)/$(executable)
 
 ifeq ($(classpath),avian)
-	boot-classpath = build/libs/avian-$(version).jar
+	boot-classpath = build/libs/classpath-avian-$(version).jar
 else
 	boot-classpath = $(build)/classpath.jar
 endif
@@ -1799,7 +1799,7 @@ $(lzma-encoder): $(lzma-encoder-objects) $(lzma-encoder-lzma-objects)
 $(lzma-loader): $(src)/lzma/load.cpp
 	$(compile-object)
 
-build/libs/avian-$(version).jar: $(classpath-dep)
+build/libs/classpath-avian-$(version).jar: $(classpath-dep)
 	./gradlew jar
 
 $(build)/classpath.jar: $(classpath-dep) $(classpath-jar-dep)
