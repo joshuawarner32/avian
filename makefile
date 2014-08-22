@@ -1777,6 +1777,9 @@ build/libs/classpath-avian-$(version).jar: $(classpath-sources)
 build/libs/classpath-openjdk-$(version).jar: $(classpath-sources)
 	./gradlew openjdkJar
 
+build/libs/classpath-android-$(version).jar: $(classpath-sources)
+	./gradlew androidJar -PandroidRoot=$(android)
+
 $(classpath-object): $(classpath-jar) $(converter)
 	@echo "creating $(@)"
 	$(converter) $(<) $(@) _binary_classpath_jar_start \

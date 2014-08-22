@@ -257,12 +257,23 @@ if(project.hasProperty('androidRoot')) {
   task androidJar(type: Jar) {
     dependsOn jar
 
+    def classpathOverrides = [
+      "sun/reflect/ConstantPool*.class",
+      "java/lang/ReflectiveOperationException*.class",
+      "java/net/ProtocolFamily*.class",
+      "java/net/StandardProtocolFamily*.class",
+      "sun/misc/Cleaner*.class",
+      "sun/misc/Unsafe*.class",
+      "java/lang/reflect/Proxy*.class"
+    ]
+
     baseName "classpath-android"
 
     from(sourceSets.android.output) {
       exclude "sun/misc/Unsafe*"
       exclude "java/lang/reflect/Proxy*"
       exclude "java/security/security.properties"
+      exclude classpathOverrides
     }
 
     from(sourceSets.android.output) {
@@ -271,6 +282,14 @@ if(project.hasProperty('androidRoot')) {
       filter { line ->
         line.replaceAll("com.android.org", "org")
       }
+    }
+
+    // NOTE: using `from jar` instead causes these "include" clauses
+    // to actually filter classpath-avian.jar when this task is run.
+    // I suspect a bug in gradle.
+    from(zipTree(jar.archivePath)) {
+      include classpathExtras
+      include classpathOverrides
     }
   }
 }
