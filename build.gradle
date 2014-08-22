@@ -192,7 +192,6 @@ task openjdkJar(type: Jar) {
   baseName "classpath-openjdk"
 
   def overrides = [
-    "sun/reflect/ConstantPool*.class",
     "java/lang/ReflectiveOperationException*.class",
     "java/net/ProtocolFamily*.class",
     "java/net/StandardProtocolFamily*.class",
@@ -230,7 +229,7 @@ task openjdkJar(type: Jar) {
     "avian/file/Handler*.class"
   ]
 
-  from("${java_home}/jre/lib/rt.jar") {
+  from(zipTree("${java_home}/jre/lib/rt.jar")) {
     exclude overrides
   }
 
