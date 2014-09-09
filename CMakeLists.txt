@@ -1,12 +1,15 @@
 # NOTE that this CMake file doesn't current build all of avian.
 # It only builds what's required for example/kaleidoscope.
 
-cmake_minimum_required (VERSION 2.6)
-project (avian)
+cmake_minimum_required(VERSION 2.6)
+project(avian)
 
-include_directories (include src)
+# TODO: parse version from gradle.properties
+set(avian_version 1.1.0-SNAPSHOT)
 
-add_definitions (
+include_directories(include src)
+
+add_definitions(
   -DAVIAN_TARGET_FORMAT=AVIAN_FORMAT_MACHO
 
   -DAVIAN_TARGET_ARCH=AVIAN_ARCH_X86_64
@@ -16,14 +19,26 @@ add_definitions (
   -D__STDC_CONSTANT_MACROS
 )
 
-include ("cmake/Platform.cmake")
+include("cmake/Platform.cmake")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PLATFORM_CXX_FLAGS}")
 
-include (CTest)
+include(CTest)
 
 # Sadly, we can't use the 'test' target, as that's coopted by ctest
 add_custom_target(check ${CMAKE_CTEST_COMMAND} -V)
 
-add_subdirectory (src)
-add_subdirectory (unittest)
+add_subdirectory(src)
+add_subdirectory(unittest)
+
+file(GLOB_RECURSE JAVA_CLASSPATH_FILES *.java)
+
+set(classpath_jar ${CMAKE_SOURCE_DIR}/build/libs/classpath-avian-${avian_version}.jar)
+
+add_custom_command(
+  OUTPUT ${classpath_jar}
+  COMMAND ${PLATFORM_GRADLE_COMMAND} jar
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  DEPENDS ${JAVA_CLASSPATH_FILES})
+
+add_custom_target(classpath ALL DEPENDS ${classpath_jar})

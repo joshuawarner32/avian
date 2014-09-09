@@ -203,8 +203,6 @@ jar {
   baseName "classpath-avian"
 }
 
-
-
 def classpathExtras = [
   "avian/Addendum*.class",
   "avian/AnnotationInvocationHandler*.class",
