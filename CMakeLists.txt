@@ -28,12 +28,12 @@ include(CTest)
 # Sadly, we can't use the 'test' target, as that's coopted by ctest
 add_custom_target(check ${CMAKE_CTEST_COMMAND} -V)
 
+set(classpath_jar ${CMAKE_SOURCE_DIR}/build/libs/classpath-avian-${avian_version}.jar)
+
 add_subdirectory(src)
 add_subdirectory(unittest)
 
 file(GLOB_RECURSE JAVA_CLASSPATH_FILES *.java)
-
-set(classpath_jar ${CMAKE_SOURCE_DIR}/build/libs/classpath-avian-${avian_version}.jar)
 
 add_custom_command(
   OUTPUT ${classpath_jar}

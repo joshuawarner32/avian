@@ -5,3 +5,47 @@ add_subdirectory(util)
 add_subdirectory(tools)
 
 add_library(avian_jvm_finder finder.cpp)
+
+set(avian_generated_type_files)
+
+foreach(output enums declarations constructors initializations java-initializations name-initializations)
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp
+    COMMAND type_generator -cp ${classpath_jar} -i ${CMAKE_CURRENT_SOURCE_DIR}/types.def -o ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp -t ${output}
+    DEPENDS type_generator ${classpath_jar} ${CMAKE_CURRENT_SOURCE_DIR}/types.def)
+  set_source_files_properties(
+    ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp
+    PROPERTIES GENERATED TRUE)
+  list(APPEND avian_generated_type_files ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp)
+endforeach()
+
+add_custom_target(
+  generated_type_files ALL
+  DEPENDS ${avian_generated_type_files})
+
+add_definitions(
+  -DUSE_ATOMIC_OPERATIONS
+  -DBOOT_CLASSPATH=\"[classpathJar]\"
+  -DAVIAN_CLASSPATH=\"[classpathJar]\"
+  -DAVIAN_VERSION=\"${avian_version}\"
+  -DAVIAN_JAVA_HOME=\"BOGUS/JAVA/HOME/PATH\" # TODO: use the _real_ java home value
+  -DAVIAN_EMBED_PREFIX=\"BOGUS/EMBED/PREFIX\" # TODO: use the _real_ embed prefix (what is this for?)
+)
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(avian_jvm
+  compile.cpp
+  debug-util.cpp
+  machine.cpp
+  process.cpp
+  util.cpp
+  builtin.cpp
+  classpath-avian.cpp
+  jnienv.cpp
+)
+
+add_dependencies(avian_jvm generated_type_files)
+
+add_executable(avian main.cpp)
+
+target_link_libraries(avian avian_jvm avian_heap avian_jvm_finder avian_codegen)
