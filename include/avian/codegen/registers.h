@@ -22,8 +22,24 @@ class RegisterMask {
   uint8_t start;
   uint8_t limit;
 
-  static unsigned maskStart(uint32_t mask);
-  static unsigned maskLimit(uint32_t mask);
+
+  static unsigned maskStart(uint32_t mask)
+  {
+    for (int i = 0; i <= 31; ++i) {
+      if (mask & (1 << i))
+        return i;
+    }
+    return 32;
+  }
+
+  static unsigned maskLimit(uint32_t mask)
+  {
+    for (int i = 31; i >= 0; --i) {
+      if (mask & (1 << i))
+        return i + 1;
+    }
+    return 0;
+  }
 
   inline RegisterMask(uint32_t mask)
       : mask(mask), start(maskStart(mask)), limit(maskLimit(mask))

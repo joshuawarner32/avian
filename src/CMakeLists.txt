@@ -59,13 +59,13 @@ add_dependencies(avian_jvm generated_type_files)
 add_executable(avian main.cpp)
 
 target_link_libraries(avian
-  avian_system
-  avian_util
   avian_jvm
   avian_heap
   avian_jvm_finder
   avian_codegen
   avian_codegen_x86
+  avian_system
+  avian_util
   ${ZLIB_LIBRARIES}
   ${PLATFORM_LIBS}
 )

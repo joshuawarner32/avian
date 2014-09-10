@@ -1161,7 +1161,6 @@ compiler-sources = \
 	$(src)/codegen/compiler.cpp \
 	$(wildcard $(src)/codegen/compiler/*.cpp) \
 	$(src)/debug-util.cpp \
-	$(src)/codegen/registers.cpp \
 	$(src)/codegen/runtime.cpp \
 	$(src)/codegen/targets.cpp \
 	$(src)/util/fixed-allocator.cpp
