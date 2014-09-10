@@ -39,6 +39,8 @@ include_directories(
   ${PLATFORM_JAVA_HOME_INCLUDES}
 )
 
+enable_language(ASM)
+
 add_library(avian_jvm
   compile.cpp
   debug-util.cpp
@@ -48,10 +50,22 @@ add_library(avian_jvm
   builtin.cpp
   classpath-avian.cpp
   jnienv.cpp
+  compile-x86.S
+  x86.S
 )
 
 add_dependencies(avian_jvm generated_type_files)
 
 add_executable(avian main.cpp)
 
-target_link_libraries(avian avian_jvm avian_heap avian_jvm_finder avian_codegen)
+target_link_libraries(avian
+  avian_system
+  avian_util
+  avian_jvm
+  avian_heap
+  avian_jvm_finder
+  avian_codegen
+  avian_codegen_x86
+  ${ZLIB_LIBRARIES}
+  ${PLATFORM_LIBS}
+)
