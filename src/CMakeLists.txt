@@ -31,7 +31,13 @@ add_definitions(
   -DAVIAN_JAVA_HOME=\"BOGUS/JAVA/HOME/PATH\" # TODO: use the _real_ java home value
   -DAVIAN_EMBED_PREFIX=\"BOGUS/EMBED/PREFIX\" # TODO: use the _real_ embed prefix (what is this for?)
 )
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+include_directories(
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  $ENV{JAVA_HOME}/include
+  ${PLATFORM_JAVA_HOME_INCLUDES}
+)
 
 add_library(avian_jvm
   compile.cpp
