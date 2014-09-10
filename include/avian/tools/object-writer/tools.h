@@ -162,6 +162,15 @@ class Platform {
   static Platform* getPlatform(PlatformInfo info);
 };
 
+
+// These are here simply to force the linker to include the relevant objects.
+// TODO: we should switch to an approach to locating / including targets that
+// both more flexible and reliable than this linker magic + static initializers
+// method.
+void ensurePeFormatsLinked();
+void ensureElfFormatsLinked();
+void ensureMachoFormatsLinked();
+
 }  // namespace tools
 
 }  // namespace avian

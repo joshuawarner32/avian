@@ -401,3 +401,15 @@ ElfPlatform<uint32_t> elfArmPlatform(PlatformInfo::Arm);
 ElfPlatform<uint64_t> elfX86_64Platform(PlatformInfo::x86_64);
 
 }  // namespace
+
+namespace avian {
+namespace tools {
+
+void ensureElfFormatsLinked()
+{
+}
+
+}  // namespace tools
+}  // namespace avian
+
+

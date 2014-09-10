@@ -12,10 +12,12 @@ foreach(output enums declarations constructors initializations java-initializati
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp
     COMMAND type_generator -cp ${classpath_jar} -i ${CMAKE_CURRENT_SOURCE_DIR}/types.def -o ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp -t ${output}
-    DEPENDS type_generator ${classpath_jar} ${CMAKE_CURRENT_SOURCE_DIR}/types.def)
+    DEPENDS type_generator ${classpath_jar} ${CMAKE_CURRENT_SOURCE_DIR}/types.def
+  )
   set_source_files_properties(
     ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp
-    PROPERTIES GENERATED TRUE)
+    PROPERTIES GENERATED TRUE
+  )
   list(APPEND avian_generated_type_files ${CMAKE_CURRENT_BINARY_DIR}/type-${output}.cpp)
 endforeach()
 
@@ -54,6 +56,22 @@ add_library(avian_jvm
   x86.S
 )
 
+set(classpath_object ${CMAKE_CURRENT_BINARY_DIR}/classpath.jar.o)
+
+add_custom_command(
+  OUTPUT ${classpath_object}
+  COMMAND binary_to_object ${classpath_jar} ${classpath_object} _binary_classpath_jar_start _binary_classpath_jar_end ${AVIAN_FORMAT_NAME} ${AVIAN_ARCH_NAME}
+)
+
+set_source_files_properties(
+    ${classpath_object} PROPERTIES
+    EXTERNAL_OBJECT TRUE
+    GENERATED TRUE
+)
+
+add_library(avian_jvm_classpath ${classpath_object})
+set_target_properties(avian_jvm_classpath PROPERTIES LINKER_LANGUAGE C)
+
 add_dependencies(avian_jvm generated_type_files)
 
 add_executable(avian main.cpp)
@@ -66,6 +84,7 @@ target_link_libraries(avian
   avian_codegen_x86
   avian_system
   avian_util
+  avian_jvm_classpath
   ${ZLIB_LIBRARIES}
   ${PLATFORM_LIBS}
 )

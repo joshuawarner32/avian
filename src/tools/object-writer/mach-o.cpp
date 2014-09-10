@@ -283,3 +283,14 @@ MachOPlatform<uint32_t> darwinArmPlatform(PlatformInfo::Arm);
 MachOPlatform<uint64_t> darwinx86_64Platform(PlatformInfo::x86_64);
 
 }  // namespace
+
+namespace avian {
+namespace tools {
+
+void ensureMachoFormatsLinked()
+{
+}
+
+}  // namespace tools
+}  // namespace avian
+

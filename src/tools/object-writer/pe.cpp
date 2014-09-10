@@ -297,3 +297,13 @@ WindowsPlatform<4, PlatformInfo::Arm>
     windowsRtPlatform;  // Windows Phone 8 and Windows RT
 
 }  // namespace
+
+namespace avian {
+namespace tools {
+
+void ensurePeFormatsLinked()
+{
+}
+
+}  // namespace tools
+}  // namespace avian
