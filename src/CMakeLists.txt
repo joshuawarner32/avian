@@ -43,19 +43,6 @@ include_directories(
 
 enable_language(ASM)
 
-add_library(avian_jvm
-  compile.cpp
-  debug-util.cpp
-  machine.cpp
-  process.cpp
-  util.cpp
-  builtin.cpp
-  classpath-avian.cpp
-  jnienv.cpp
-  compile-x86.S
-  x86.S
-)
-
 set(classpath_object ${CMAKE_CURRENT_BINARY_DIR}/classpath.jar.o)
 
 add_custom_command(
@@ -69,12 +56,34 @@ set_source_files_properties(
     GENERATED TRUE
 )
 
-add_library(avian_jvm_classpath ${classpath_object})
-set_target_properties(avian_jvm_classpath PROPERTIES LINKER_LANGUAGE C)
+add_library(avian_jvm
+  compile.cpp
+  debug-util.cpp
+  machine.cpp
+  process.cpp
+  util.cpp
+  builtin.cpp
+  classpath-avian.cpp
+  jnienv.cpp
+  compile-x86.S
+  boot.cpp
+  x86.S
+  ${classpath_object}
+)
 
 add_dependencies(avian_jvm generated_type_files)
 
 add_executable(avian main.cpp)
+
+if(APPLE)
+  set(WHOLE_avian_classpath_native -force_load avian_classpath_native)
+elseif(MSVC)
+  # TODO: not sure what linker options to use on MSVC to ensure the entire archive is linked...
+  set(WHOLE_avian_classpath_native avian_classpath_native)
+else()
+  # assume gnu linker
+  set(WHOLE_avian_classpath_native -Wl,--whole-archive -Wl,avian_classpath_native -Wl,--no-whole-archive)
+endif()
 
 target_link_libraries(avian
   avian_jvm
@@ -84,7 +93,7 @@ target_link_libraries(avian
   avian_codegen_x86
   avian_system
   avian_util
-  avian_jvm_classpath
+  ${WHOLE_avian_classpath_native}
   ${ZLIB_LIBRARIES}
   ${PLATFORM_LIBS}
 )

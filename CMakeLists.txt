@@ -30,6 +30,7 @@ add_custom_target(check ${CMAKE_CTEST_COMMAND} -V)
 set(classpath_jar ${CMAKE_SOURCE_DIR}/build/libs/classpath-avian-${avian_version}.jar)
 
 add_subdirectory(src)
+add_subdirectory(classpath)
 add_subdirectory(unittest)
 
 file(GLOB_RECURSE JAVA_CLASSPATH_FILES *.java)
