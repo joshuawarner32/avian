@@ -17,3 +17,5 @@ add_library(avian_classpath_native
   java-util.cpp
   sockets.cpp
 )
+
+add_dependencies(avian_classpath_native generated_type_files)
