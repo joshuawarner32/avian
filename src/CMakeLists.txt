@@ -82,7 +82,7 @@ elseif(MSVC)
   set(WHOLE_avian_classpath_native avian_classpath_native)
 else()
   # assume gnu linker
-  set(WHOLE_avian_classpath_native -Wl,--whole-archive -Wl,avian_classpath_native -Wl,--no-whole-archive)
+  set(WHOLE_avian_classpath_native -Wl,--whole-archive avian_classpath_native -Wl,--no-whole-archive)
 endif()
 
 target_link_libraries(avian
