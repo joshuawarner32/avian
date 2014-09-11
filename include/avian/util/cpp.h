@@ -51,7 +51,7 @@ void setArrayElements(T*) {
 template<class T, class... Ts>
 void setArrayElements(T* arr, T elem, Ts... ts) {
   *arr = elem;
-  setArrayElements(arr, ts...);
+  setArrayElements<T>(arr + 1, ts...);
 }
 
 }  // namespace util
