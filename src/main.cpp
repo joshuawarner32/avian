@@ -26,7 +26,7 @@
 
 #ifdef _MSC_VER
 
-#define not!
+#define not !
 #define or ||
 #define and &&
 #define xor ^

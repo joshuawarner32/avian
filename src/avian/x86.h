@@ -226,7 +226,11 @@ namespace vm {
 inline void trap()
 {
 #ifdef _MSC_VER
+#  ifdef ARCH_x86_64
+  __debugbreak();
+#  else
   __asm int 3
+#  endif
 #else
   asm("int3");
 #endif

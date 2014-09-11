@@ -17,12 +17,23 @@
 #include <cpuid.h>
 #else
 // MSVC implementation:
+#include <intrin.h>
+
 static int __get_cpuid(unsigned int __level,
                        unsigned int* __eax,
                        unsigned int* __ebx,
                        unsigned int* __ecx,
                        unsigned int* __edx)
 {
+
+#  ifdef ARCH_x86_64
+  int buf[4];
+  __cpuid(buf, __level);
+  *__eax = buf[0];
+  *__ebx = buf[1];
+  *__ecx = buf[2];
+  *__edx = buf[3];
+#  else
   _asm
   {
     mov eax, __level;
@@ -32,6 +43,7 @@ static int __get_cpuid(unsigned int __level,
     mov[__ecx], ecx;
     mov[__edx], edx;
   }
+#  endif
   return 1;
 }
 #define bit_SSE (1 << 25)
