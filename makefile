@@ -962,7 +962,7 @@ ifeq ($(platform),wp8)
 	lflags += PhoneAppModelHost.lib WindowsPhoneCore.lib -WINMD -WINMDFILE:$(subst $(so-suffix),.winmd,$(@))
 
 	cc = $(cxx)
-	asm-format = masm
+	asm-format = asm
 	shared = -dll
 	ar = "$$(cygpath -u "$(WP80_SDK)\bin\lib.exe")"
 	arflags += -nologo

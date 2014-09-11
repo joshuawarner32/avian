@@ -1089,9 +1089,22 @@ void checkDaemon(Thread* t);
 
 GcRoots* roots(Thread* t);
 
+#ifdef _MSC_VER
+extern "C" uint64_t vmRun_(uint64_t (*function)(Thread*, uintptr_t*),
+                           uintptr_t* arguments,
+                           void* checkpoint);
+
+inline uint64_t vmRun(uint64_t (*function)(Thread*, uintptr_t*),
+                      uintptr_t* arguments,
+                      void* checkpoint)
+{
+  return vmRun_(function, arguments, checkpoint);
+}
+#else
 extern "C" uint64_t vmRun(uint64_t (*function)(Thread*, uintptr_t*),
                           uintptr_t* arguments,
                           void* checkpoint);
+#endif
 
 extern "C" void vmRun_returnAddress();
 

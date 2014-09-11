@@ -41,7 +41,15 @@ include_directories(
   ${PLATFORM_JAVA_HOME_INCLUDES}
 )
 
-enable_language(ASM)
+if(MSVC)
+  enable_language(ASM_MASM)
+  set_source_files_properties(compile-x86.asm PROPERTIES COMPILE_FLAGS "-DTARGET_BYTES_PER_WORD=4")
+  set_source_files_properties(x86.asm PROPERTIES COMPILE_FLAGS "-DTARGET_BYTES_PER_WORD=4")
+  set(avian_asm_sources compile-x86.asm x86.asm)
+else()
+  enable_language(ASM)
+  set(avian_asm_sources compile-x86.S x86.S)
+endif()
 
 set(classpath_object ${CMAKE_CURRENT_BINARY_DIR}/classpath.jar.o)
 
@@ -65,9 +73,8 @@ add_library(avian_jvm
   builtin.cpp
   classpath-avian.cpp
   jnienv.cpp
-  compile-x86.S
   boot.cpp
-  x86.S
+  ${avian_asm_sources}
   ${classpath_object}
 )
 
