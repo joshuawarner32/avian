@@ -56,6 +56,7 @@ set(classpath_object ${CMAKE_CURRENT_BINARY_DIR}/classpath.jar.o)
 add_custom_command(
   OUTPUT ${classpath_object}
   COMMAND binary_to_object ${classpath_jar} ${classpath_object} _binary_classpath_jar_start _binary_classpath_jar_end ${AVIAN_FORMAT_NAME} ${AVIAN_ARCH_NAME}
+  DEPENDS binary_to_object ${classpath_jar}
 )
 
 set_source_files_properties(
