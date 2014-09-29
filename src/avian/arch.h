@@ -12,6 +12,7 @@
 #define ARCH_H
 
 #ifdef _MSC_VER
+#define _WINSOCKAPI_
 #include "windows.h"
 #pragma push_macro("assert")
 #include "intrin.h"
