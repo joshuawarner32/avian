@@ -5054,8 +5054,13 @@ loop:
       unsigned rSize = resultSize(t, returnCode);
       unsigned parameterFootprint = template_->parameterFootprint();
 
-      bool tailCall
-          = isTailCall(t, code, ip, context->method, invocation->template_());
+      // TODO: can we allow tailCalls in general?
+      // e.g. what happens if the call site is later bound to a method that can't be tail called?
+      // NOTE: calling isTailCall right now would cause an segfault, since
+      // invocation->template_()->class_() will be null.
+      // bool tailCall
+      //     = isTailCall(t, code, ip, context->method, invocation->template_());
+      bool tailCall = false;
 
       // todo: do we need to tell the compiler to add a load barrier
       // here for VolatileCallSite instances?
