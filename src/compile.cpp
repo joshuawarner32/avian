@@ -9112,17 +9112,15 @@ class MyProcessor : public Processor {
   void** dynamicTable;
 };
 
-unsigned&
-dynamicIndex(MyThread* t)
-{
-  return static_cast<MyProcessor*>(t->m->processor)->dynamicIndex;
-}
+// unsigned& dynamicIndex(MyThread* t)
+// {
+//   return static_cast<MyProcessor*>(t->m->processor)->dynamicIndex;
+// }
 
-void**&
-dynamicTable(MyThread* t)
-{
-  return static_cast<MyProcessor*>(t->m->processor)->dynamicTable;
-}
+// void**& dynamicTable(MyThread* t)
+// {
+//   return static_cast<MyProcessor*>(t->m->processor)->dynamicTable;
+// }
 
 const char* stringOrNull(const char* str)
 {
