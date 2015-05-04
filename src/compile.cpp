@@ -4946,6 +4946,48 @@ loop:
               args(c->threadRegister(), frame->append(argument), instance)));
     } break;
 
+    case invokedynamic: {
+      context->leaf = false;
+
+      uint16_t poolIndex = codeReadInt16(t, code, ip);
+      ip += 2;
+
+      GcInvocation* invocation = cast<GcInvocation>(
+          t,
+          singletonObject(t, context->method->code()->pool(), poolIndex - 1));
+
+      PROTECT(t, invocation);
+
+      invocation->setClass(t, context->method->class_());
+
+      unsigned index = addDynamic(t, invocation);
+
+      GcMethod* template_ = invocation->template_();
+      unsigned returnCode = template_->returnCode();
+      unsigned rSize = resultSize(t, returnCode);
+      unsigned parameterFootprint = template_->parameterFootprint();
+
+      bool tailCall
+          = isTailCall(t, code, ip, context->method, invocation->template_());
+
+      // todo: do we need to tell the compiler to add a load barrier
+      // here for VolatileCallSite instances?
+
+      ir::Value* result = c->stackCall(
+          c->memory(c->memory(c->threadRegister(), ir::Type::object(),
+                              TARGET_THREAD_DYNAMICTABLE),
+                    ir::Type::object(), index * TargetBytesPerWord),
+          tailCall ? Compiler::TailJump : 0, frame->trace(0, 0),
+          operandTypeForFieldCode(t, returnCode),
+          frame->peekMethodArguments(parameterFootprint));
+
+      frame->popFootprint(parameterFootprint);
+
+      if (rSize) {
+        frame->pushReturnValue(returnCode, result);
+      }
+    } break;
+
     case invokeinterface: {
       context->leaf = false;
 
