@@ -8432,6 +8432,10 @@ class MyProcessor : public Processor {
                           &MyThread::thunkTable,
                           "TARGET_THREAD_THUNKTABLE")
           + checkConstant(t,
+                          TARGET_THREAD_DYNAMICTABLE,
+                          &MyThread::dynamicTable,
+                          "TARGET_THREAD_DYNAMICTABLE")
+          + checkConstant(t,
                           TARGET_THREAD_STACKLIMIT,
                           &MyThread::stackLimit,
                           "TARGET_THREAD_STACKLIMIT");
