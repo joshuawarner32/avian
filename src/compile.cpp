@@ -295,6 +295,7 @@ class MyThread : public Thread {
   uintptr_t* heapImage;
   uint8_t* codeImage;
   void** thunkTable;
+  void** dynamicTable;
   CallTrace* trace;
   Reference* reference;
   avian::codegen::Architecture* arch;
