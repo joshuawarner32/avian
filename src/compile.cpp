@@ -10064,10 +10064,10 @@ uintptr_t defaultVirtualThunk(MyThread* t)
   return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultVirtual.start);
 }
 
-uintptr_t defaultDynamicThunk(MyThread* t)
-{
-  return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultDynamic.start);
-}
+// uintptr_t defaultDynamicThunk(MyThread* t)
+// {
+//   return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultDynamic.start);
+// }
 
 uintptr_t nativeThunk(MyThread* t)
 {
