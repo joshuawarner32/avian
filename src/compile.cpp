@@ -8993,7 +8993,7 @@ class MyProcessor : public Processor {
     if (image and code) {
       local::boot(static_cast<MyThread*>(t), image, code);
     } else {
-      roots = makeCompileRoots(t, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      roots = makeCompileRoots(t, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
       {
         GcArray* ct = makeArray(t, 128);
