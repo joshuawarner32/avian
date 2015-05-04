@@ -1280,6 +1280,93 @@ class Context {
   Slice<ir::Value*> argumentBuffer;
 };
 
+unsigned& dynamicIndex(MyThread* t);
+
+void**& dynamicTable(MyThread* t);
+
+void updateDynamicTable(MyThread* t, MyThread* o)
+{
+  o->dynamicTable = dynamicTable(t);
+  if (t->peer)
+    updateDynamicTable(static_cast<MyThread*>(t->peer), o);
+  if (t->child)
+    updateDynamicTable(static_cast<MyThread*>(t->child), o);
+}
+
+uintptr_t defaultDynamicThunk(MyThread* t);
+
+uintptr_t compileVirtualThunk(MyThread* t,
+                              unsigned index,
+                              unsigned* size,
+                              uintptr_t thunk,
+                              const char* baseName);
+
+
+unsigned addDynamic(MyThread* t, GcInvocation* invocation)
+{
+  ACQUIRE(t, t->m->classLock);
+
+  int index = invocation->index();
+  if (index == -1) {
+    index = dynamicIndex(t)++;
+    invocation->index() = index;
+
+    unsigned oldCapacity = roots(t)->invocations()
+                               ? roots(t)->invocations()->length()
+                               : 0;
+
+    if (static_cast<unsigned>(index) >= oldCapacity) {
+      unsigned newCapacity = oldCapacity ? 2 * oldCapacity : 4096;
+
+      void** newTable = static_cast<void**>(
+          t->m->heap->allocate(newCapacity * BytesPerWord));
+
+      GcArray* newData = makeArray(t, newCapacity);
+      PROTECT(t, newData);
+
+      GcWordArray* newThunks = makeWordArray(t, newCapacity * 2);
+      PROTECT(t, newThunks);
+
+      if (dynamicTable(t)) {
+        memcpy(newTable, dynamicTable(t), oldCapacity * BytesPerWord);
+
+        for(size_t i = 0; i < oldCapacity; i++) {
+          newData->setBodyElement(t, i,
+               roots(t)->invocations()->body()[i]);
+        }
+
+
+        mark(t, newData, ArrayBody, oldCapacity);
+
+        memcpy(newThunks->body().begin(),
+               compileRoots(t)->dynamicThunks()->body().begin(),
+               compileRoots(t)->dynamicThunks()->length() * BytesPerWord);
+      }
+
+      ENTER(t, Thread::ExclusiveState);
+
+      dynamicTable(t) = newTable;
+      roots(t)->setInvocations(t, newData);
+
+      updateDynamicTable(static_cast<MyThread*>(t->m->rootThread), t);
+
+      compileRoots(t)->setDynamicThunks(t, newThunks);
+    }
+
+    unsigned size;
+    uintptr_t thunk = compileVirtualThunk(
+        t, index, &size, defaultDynamicThunk(t), "dynamicThunk");
+    compileRoots(t)->dynamicThunks()->body()[index * 2] = thunk;
+    compileRoots(t)->dynamicThunks()->body()[(index * 2) + 1] = size;
+
+    t->dynamicTable[index] = reinterpret_cast<void*>(thunk);
+
+    roots(t)->invocations()->setBodyElement(t, index, invocation);
+  }
+
+  return index;
+}
+
 unsigned translateLocalIndex(Context* context,
                              unsigned footprint,
                              unsigned index)
@@ -4960,8 +5047,7 @@ loop:
 
       invocation->setClass(t, context->method->class_());
 
-      // unsigned index = addDynamic(t, invocation);
-      unsigned index = 0;
+      unsigned index = addDynamic(t, invocation);
 
       GcMethod* template_ = invocation->template_();
       unsigned returnCode = template_->returnCode();
@@ -9155,15 +9241,15 @@ class MyProcessor : public Processor {
   void** dynamicTable;
 };
 
-// unsigned& dynamicIndex(MyThread* t)
-// {
-//   return static_cast<MyProcessor*>(t->m->processor)->dynamicIndex;
-// }
+unsigned& dynamicIndex(MyThread* t)
+{
+  return static_cast<MyProcessor*>(t->m->processor)->dynamicIndex;
+}
 
-// void**& dynamicTable(MyThread* t)
-// {
-//   return static_cast<MyProcessor*>(t->m->processor)->dynamicTable;
-// }
+void**& dynamicTable(MyThread* t)
+{
+  return static_cast<MyProcessor*>(t->m->processor)->dynamicTable;
+}
 
 const char* stringOrNull(const char* str)
 {
@@ -10121,10 +10207,10 @@ uintptr_t defaultVirtualThunk(MyThread* t)
   return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultVirtual.start);
 }
 
-// uintptr_t defaultDynamicThunk(MyThread* t)
-// {
-//   return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultDynamic.start);
-// }
+uintptr_t defaultDynamicThunk(MyThread* t)
+{
+  return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultDynamic.start);
+}
 
 uintptr_t nativeThunk(MyThread* t)
 {
