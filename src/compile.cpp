@@ -8345,8 +8345,10 @@ class MyProcessor : public Processor {
                             GcArithmeticException::FixedSize),
         codeAllocator(s, Slice<uint8_t>(0, 0)),
         callTableSize(0),
+        dynamicIndex(0),
         useNativeFeatures(useNativeFeatures),
-        compilationHandlers(0)
+        compilationHandlers(0),
+        dynamicTable(0)
   {
     thunkTable[compileMethodIndex] = voidPointer(local::compileMethod);
     thunkTable[compileVirtualMethodIndex] = voidPointer(compileVirtualMethod);
@@ -9103,10 +9105,24 @@ class MyProcessor : public Processor {
   ThunkCollection thunks;
   ThunkCollection bootThunks;
   unsigned callTableSize;
+  unsigned dynamicIndex;
   bool useNativeFeatures;
   void* thunkTable[dummyIndex + 1];
   CompilationHandlerList* compilationHandlers;
+  void** dynamicTable;
 };
+
+unsigned&
+dynamicIndex(MyThread* t)
+{
+  return static_cast<MyProcessor*>(t->m->processor)->dynamicIndex;
+}
+
+void**&
+dynamicTable(MyThread* t)
+{
+  return static_cast<MyProcessor*>(t->m->processor)->dynamicTable;
+}
 
 const char* stringOrNull(const char* str)
 {
