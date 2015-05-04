@@ -83,6 +83,7 @@ const unsigned InitialZoneCapacityInBytes = 64 * 1024;
 enum ThunkIndex {
   compileMethodIndex,
   compileVirtualMethodIndex,
+  linkDynamicMethodIndex,
   invokeNativeIndex,
   throwArrayIndexOutOfBoundsIndex,
   throwStackOverflowIndex,
@@ -10084,7 +10085,11 @@ bool unresolved(MyThread* t, uintptr_t methodAddress)
          or methodAddress == bootDefaultThunk(t);
 }
 
-uintptr_t compileVirtualThunk(MyThread* t, unsigned index, unsigned* size)
+uintptr_t compileVirtualThunk(MyThread* t,
+                              unsigned index,
+                              unsigned* size,
+                              uintptr_t thunk,
+                              const char* baseName)
 {
   Context context(t);
   avian::codegen::Assembler* a = context.assembler;
