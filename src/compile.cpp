@@ -8318,6 +8318,7 @@ class MyProcessor : public Processor {
    public:
     Thunk default_;
     Thunk defaultVirtual;
+    Thunk defaultDynamic;
     Thunk native;
     Thunk aioob;
     Thunk stackOverflow;
@@ -9241,15 +9242,16 @@ bool isThunkUnsafeStack(MyProcessor::Thunk* thunk, void* ip)
 
 bool isThunkUnsafeStack(MyProcessor::ThunkCollection* thunks, void* ip)
 {
-  const unsigned NamedThunkCount = 5;
+  const unsigned NamedThunkCount = 6;
 
   MyProcessor::Thunk table[NamedThunkCount + ThunkCount];
 
   table[0] = thunks->default_;
   table[1] = thunks->defaultVirtual;
-  table[2] = thunks->native;
-  table[3] = thunks->aioob;
-  table[4] = thunks->stackOverflow;
+  table[2] = thunks->defaultDynamic;
+  table[3] = thunks->native;
+  table[4] = thunks->aioob;
+  table[5] = thunks->stackOverflow;
 
   for (unsigned i = 0; i < ThunkCount; ++i) {
     new (table + NamedThunkCount + i)
@@ -9599,8 +9601,8 @@ void findThunks(MyThread* t, BootImage* image, uint8_t* code)
   MyProcessor* p = processor(t);
 
   p->bootThunks.default_ = thunkToThunk(image->thunks.default_, code);
-  p->bootThunks.defaultVirtual
-      = thunkToThunk(image->thunks.defaultVirtual, code);
+  p->bootThunks.defaultVirtual = thunkToThunk(image->thunks.defaultVirtual, code);
+  p->bootThunks.defaultDynamic = thunkToThunk(image->thunks.defaultDynamic, code);
   p->bootThunks.native = thunkToThunk(image->thunks.native, code);
   p->bootThunks.aioob = thunkToThunk(image->thunks.aioob, code);
   p->bootThunks.stackOverflow = thunkToThunk(image->thunks.stackOverflow, code);
@@ -9808,6 +9810,68 @@ void compileCall(MyThread* t, Context* c, ThunkIndex index, bool call = true)
   }
 }
 
+void compileDefaultThunk(MyThread* t,
+                         FixedAllocator* allocator,
+                         MyProcessor::Thunk* thunk,
+                         const char* name,
+                         ThunkIndex thunkIndex,
+                         bool hasTarget)
+{
+  Context context(t);
+  avian::codegen::Assembler* a = context.assembler;
+
+  if(hasTarget) {
+    lir::RegisterPair class_(t->arch->virtualCallTarget());
+    lir::Memory virtualCallTargetSrc(
+        t->arch->stack(),
+        (t->arch->frameFooterSize() + t->arch->frameReturnAddressSize())
+        * TargetBytesPerWord);
+
+    a->apply(lir::Move,
+             OperandInfo(
+                 TargetBytesPerWord, lir::Operand::Type::Memory, &virtualCallTargetSrc),
+             OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &class_));
+
+    lir::Memory virtualCallTargetDst(t->arch->thread(),
+                                     TARGET_THREAD_VIRTUALCALLTARGET);
+
+    a->apply(
+        lir::Move,
+        OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &class_),
+        OperandInfo(
+            TargetBytesPerWord, lir::Operand::Type::Memory, &virtualCallTargetDst));
+  }
+
+  lir::RegisterPair index(t->arch->virtualCallIndex());
+  lir::Memory virtualCallIndex(t->arch->thread(),
+                               TARGET_THREAD_VIRTUALCALLINDEX);
+
+  a->apply(
+      lir::Move,
+      OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &index),
+      OperandInfo(TargetBytesPerWord, lir::Operand::Type::Memory, &virtualCallIndex));
+
+  a->saveFrame(TARGET_THREAD_STACK, TARGET_THREAD_IP);
+
+  thunk->frameSavedOffset = a->length();
+
+  lir::RegisterPair thread(t->arch->thread());
+  a->pushFrame(1, TargetBytesPerWord, lir::Operand::Type::RegisterPair, &thread);
+
+  compileCall(t, &context, thunkIndex);
+
+  a->popFrame(t->arch->alignFrameSize(1));
+
+  lir::RegisterPair result(t->arch->returnLow());
+  a->apply(lir::Jump,
+           OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &result));
+
+  thunk->length = a->endBlock(false)->resolve(0, 0);
+
+  thunk->start = finish(
+      t, allocator, a, name, thunk->length);
+}
+
 void compileThunks(MyThread* t, FixedAllocator* allocator)
 {
   MyProcessor* p = processor(t);
@@ -9837,59 +9901,13 @@ void compileThunks(MyThread* t, FixedAllocator* allocator)
         = finish(t, allocator, a, "default", p->thunks.default_.length);
   }
 
-  {
-    Context context(t);
-    avian::codegen::Assembler* a = context.assembler;
+  compileDefaultThunk
+    (t, allocator, &(p->thunks.defaultVirtual), "defaultVirtual",
+     compileVirtualMethodIndex, true);
 
-    lir::RegisterPair class_(t->arch->virtualCallTarget());
-    lir::Memory virtualCallTargetSrc(
-        t->arch->stack(),
-        (t->arch->frameFooterSize() + t->arch->frameReturnAddressSize())
-        * TargetBytesPerWord);
-
-    a->apply(lir::Move,
-             OperandInfo(
-                 TargetBytesPerWord, lir::Operand::Type::Memory, &virtualCallTargetSrc),
-             OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &class_));
-
-    lir::Memory virtualCallTargetDst(t->arch->thread(),
-                                     TARGET_THREAD_VIRTUALCALLTARGET);
-
-    a->apply(
-        lir::Move,
-        OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &class_),
-        OperandInfo(
-            TargetBytesPerWord, lir::Operand::Type::Memory, &virtualCallTargetDst));
-
-    lir::RegisterPair index(t->arch->virtualCallIndex());
-    lir::Memory virtualCallIndex(t->arch->thread(),
-                                 TARGET_THREAD_VIRTUALCALLINDEX);
-
-    a->apply(
-        lir::Move,
-        OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &index),
-        OperandInfo(TargetBytesPerWord, lir::Operand::Type::Memory, &virtualCallIndex));
-
-    a->saveFrame(TARGET_THREAD_STACK, TARGET_THREAD_IP);
-
-    p->thunks.defaultVirtual.frameSavedOffset = a->length();
-
-    lir::RegisterPair thread(t->arch->thread());
-    a->pushFrame(1, TargetBytesPerWord, lir::Operand::Type::RegisterPair, &thread);
-
-    compileCall(t, &context, compileVirtualMethodIndex);
-
-    a->popFrame(t->arch->alignFrameSize(1));
-
-    lir::RegisterPair result(t->arch->returnLow());
-    a->apply(lir::Jump,
-             OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &result));
-
-    p->thunks.defaultVirtual.length = a->endBlock(false)->resolve(0, 0);
-
-    p->thunks.defaultVirtual.start = finish(
-        t, allocator, a, "defaultVirtual", p->thunks.defaultVirtual.length);
-  }
+  compileDefaultThunk
+    (t, allocator, &(p->thunks.defaultDynamic), "defaultDynamic",
+     linkDynamicMethodIndex, false);
 
   {
     Context context(t);
@@ -10041,6 +10059,11 @@ uintptr_t defaultVirtualThunk(MyThread* t)
   return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultVirtual.start);
 }
 
+uintptr_t defaultDynamicThunk(MyThread* t)
+{
+  return reinterpret_cast<uintptr_t>(processor(t)->thunks.defaultDynamic.start);
+}
+
 uintptr_t nativeThunk(MyThread* t)
 {
   return reinterpret_cast<uintptr_t>(processor(t)->thunks.native.start);
@@ -10070,11 +10093,10 @@ uintptr_t compileVirtualThunk(MyThread* t, unsigned index, unsigned* size)
       OperandInfo(TargetBytesPerWord, lir::Operand::Type::Constant, &indexConstant),
       OperandInfo(TargetBytesPerWord, lir::Operand::Type::RegisterPair, &indexRegister));
 
-  avian::codegen::ResolvedPromise defaultVirtualThunkPromise(
-      defaultVirtualThunk(t));
-  lir::Constant thunk(&defaultVirtualThunkPromise);
+  avian::codegen::ResolvedPromise promise(thunk);
+  lir::Constant target(&promise);
   a->apply(lir::Jump,
-           OperandInfo(TargetBytesPerWord, lir::Operand::Type::Constant, &thunk));
+           OperandInfo(TargetBytesPerWord, lir::Operand::Type::Constant, &target));
 
   *size = a->endBlock(false)->resolve(0, 0);
 
@@ -10084,8 +10106,7 @@ uintptr_t compileVirtualThunk(MyThread* t, unsigned index, unsigned* size)
   a->setDestination(start);
   a->write();
 
-  const char* const virtualThunkBaseName = "virtualThunk";
-  const size_t virtualThunkBaseNameLength = strlen(virtualThunkBaseName);
+  const size_t virtualThunkBaseNameLength = strlen(baseName);
   const size_t maxIntStringLength = 10;
 
   THREAD_RUNTIME_ARRAY(t,
@@ -10095,7 +10116,7 @@ uintptr_t compileVirtualThunk(MyThread* t, unsigned index, unsigned* size)
 
   sprintf(RUNTIME_ARRAY_BODY(virtualThunkName),
           "%s%d",
-          virtualThunkBaseName,
+          baseName,
           index);
 
   logCompile(t, start, *size, 0, RUNTIME_ARRAY_BODY(virtualThunkName), 0);
@@ -10121,7 +10142,7 @@ uintptr_t virtualThunk(MyThread* t, unsigned index)
 
   if (oldArray->body()[index * 2] == 0) {
     unsigned size;
-    uintptr_t thunk = compileVirtualThunk(t, index, &size);
+    uintptr_t thunk = compileVirtualThunk(t, index, &size, defaultVirtualThunk(t), "virtualThunk");
     oldArray->body()[index * 2] = thunk;
     oldArray->body()[(index * 2) + 1] = size;
   }
