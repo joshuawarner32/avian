@@ -4960,7 +4960,8 @@ loop:
 
       invocation->setClass(t, context->method->class_());
 
-      unsigned index = addDynamic(t, invocation);
+      // unsigned index = addDynamic(t, invocation);
+      unsigned index = 0;
 
       GcMethod* template_ = invocation->template_();
       unsigned returnCode = template_->returnCode();
