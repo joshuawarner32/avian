@@ -3343,6 +3343,10 @@ uint64_t boot(Thread* t, uintptr_t*)
   // sequence point, for gc (don't recombine statements)
   roots(t)->setShutdownInProgress(t, throwable);
 
+  throwable = makeThrowable(t, GcVirtualMachineError::Type);
+  // sequence point, for gc (don't recombine statements)
+  roots(t)->setVirtualMachineError(t, throwable);
+
   t->m->classpath->preBoot(t);
 
   t->javaThread = t->m->classpath->makeThread(t, 0);

@@ -400,6 +400,7 @@
   (cleaner objectsToClean)
   (throwable nullPointerException)
   (throwable arithmeticException)
+  (throwable virtualMachineError)
   (throwable arrayIndexOutOfBoundsException)
   (throwable outOfMemoryError)
   (throwable shutdownInProgress)

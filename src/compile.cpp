@@ -2579,6 +2579,20 @@ void NO_RETURN throwArithmetic(MyThread* t)
   }
 }
 
+void NO_RETURN throwVirtualMachineError(MyThread* t)
+{
+  if (ensure(t, GcVirtualMachineError::FixedSize + traceSize(t))) {
+    t->setFlag(Thread::TracingFlag);
+    THREAD_RESOURCE0(t, t->clearFlag(Thread::TracingFlag));
+
+    throwNew(t, GcVirtualMachineError::Type);
+  } else {
+    // not enough memory available for a new exception and stack trace
+    // -- use a preallocated instance instead
+    throw_(t, roots(t)->virtualMachineError());
+  }
+}
+
 int64_t divideLong(MyThread* t, int64_t b, int64_t a)
 {
   if (LIKELY(b)) {
@@ -7271,6 +7285,11 @@ uint64_t compileVirtualMethod(MyThread* t)
   return reinterpret_cast<uintptr_t>(compileVirtualMethod2(t, class_, index));
 }
 
+uint64_t linkDynamicMethod(MyThread* t)
+{
+  throwVirtualMachineError(t);
+}
+
 uint64_t invokeNativeFast(MyThread* t, GcMethod* method, void* function)
 {
   FastNativeFunction f;
@@ -8486,6 +8505,7 @@ class MyProcessor : public Processor {
   {
     thunkTable[compileMethodIndex] = voidPointer(local::compileMethod);
     thunkTable[compileVirtualMethodIndex] = voidPointer(compileVirtualMethod);
+    thunkTable[linkDynamicMethodIndex] = voidPointer(linkDynamicMethod);
     thunkTable[invokeNativeIndex] = voidPointer(invokeNative);
     thunkTable[throwArrayIndexOutOfBoundsIndex]
         = voidPointer(throwArrayIndexOutOfBounds);
