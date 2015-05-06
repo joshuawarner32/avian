@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public abstract class MethodHandle {
   public MethodType type() { throw new RuntimeException(); }
   public final native Object invokeExact(Object... o) throws Throwable;

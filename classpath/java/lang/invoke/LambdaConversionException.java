@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public class LambdaConversionException extends java.lang.Exception {
   public LambdaConversionException() { throw new RuntimeException(); }
   public LambdaConversionException(String s) { throw new RuntimeException(); }

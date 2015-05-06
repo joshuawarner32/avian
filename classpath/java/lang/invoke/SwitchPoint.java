@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public class SwitchPoint {
   public SwitchPoint() { throw new RuntimeException(); }
   public boolean hasBeenInvalidated() { throw new RuntimeException(); }

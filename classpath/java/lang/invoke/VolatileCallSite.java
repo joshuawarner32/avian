@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public class VolatileCallSite extends CallSite {
   public VolatileCallSite(MethodType mt) { throw new RuntimeException(); }
   public VolatileCallSite(MethodHandle mh) { throw new RuntimeException(); }

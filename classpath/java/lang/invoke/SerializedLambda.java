@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public final class SerializedLambda implements java.io.Serializable {
   public SerializedLambda(Class<?> c, String s1, String s2, String s3, int i, String s4, String s5, String s6, String s7, Object o[]) { throw new RuntimeException(); }
   public String getCapturingClass() { throw new RuntimeException(); }

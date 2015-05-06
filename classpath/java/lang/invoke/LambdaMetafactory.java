@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public class LambdaMetafactory {
   public static final int FLAG_SERIALIZABLE = 0;
   public static final int FLAG_MARKERS = 0;

@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public abstract class CallSite {
   public MethodType type() { throw new RuntimeException(); }
   public abstract MethodHandle getTarget();

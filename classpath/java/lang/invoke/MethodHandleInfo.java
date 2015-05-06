@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public interface MethodHandleInfo {
   public static final int REF_getField = 0;
   public static final int REF_getStatic = 0;

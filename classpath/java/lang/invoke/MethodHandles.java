@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public class MethodHandles {
   public static MethodHandles.Lookup lookup() { throw new RuntimeException(); }
   public static MethodHandles.Lookup publicLookup() { throw new RuntimeException(); }

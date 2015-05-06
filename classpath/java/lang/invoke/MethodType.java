@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public final class MethodType implements java.io.Serializable {
   public static MethodType methodType(Class<?> c, Class<?>[] cs) { throw new RuntimeException(); }
   public static MethodType methodType(Class<?> c, java.util.List<Class<?>> cs) { throw new RuntimeException(); }

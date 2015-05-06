@@ -1,3 +1,5 @@
+package java.lang.invoke;
+
 public class MutableCallSite extends CallSite {
   public MutableCallSite(MethodType mt) { throw new RuntimeException(); }
   public MutableCallSite(MethodHandle mh) { throw new RuntimeException(); }
