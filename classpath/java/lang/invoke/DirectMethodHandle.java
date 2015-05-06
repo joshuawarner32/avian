@@ -1,0 +1,2 @@
+class DirectMethodHandle extends MethodHandle {
+}
