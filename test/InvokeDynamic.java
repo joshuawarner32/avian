@@ -1,7 +1,3 @@
-package test;
-
-import java.lang.invoke.MethodHandles.Lookup;
-
 public class InvokeDynamic {
 
   public static void main(String[] args) {

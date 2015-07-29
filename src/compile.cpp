@@ -58,7 +58,7 @@ namespace {
 
 namespace local {
 
-const bool DebugCompile = false;
+const bool DebugCompile = true;
 const bool DebugNatives = false;
 const bool DebugCallTable = false;
 const bool DebugMethodTree = false;
@@ -7050,13 +7050,13 @@ void finish(MyThread* t, FixedAllocator* allocator, Context* context)
       reinterpret_cast<const char*>(context->method->spec()->body().begin()));
 
   // for debugging:
-  if (false
+  if (true
       and ::strcmp(reinterpret_cast<const char*>(
                        context->method->class_()->name()->body().begin()),
-                   "java/lang/System") == 0
+                   "InvokeDynamic") == 0
       and ::strcmp(reinterpret_cast<const char*>(
                        context->method->name()->body().begin()),
-                   "<clinit>") == 0) {
+                   "main") == 0) {
     trap();
   }
   syncInstructionCache(start, codeSize);
