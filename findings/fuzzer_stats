@@ -1,0 +1,25 @@
+start_time     : 1438180469
+last_update    : 1438196280
+fuzzer_pid     : 8548
+cycles_done    : 0
+execs_done     : 3619243
+execs_per_sec  : 290.09
+paths_total    : 1077
+paths_favored  : 299
+paths_found    : 1076
+paths_imported : 0
+max_depth      : 3
+cur_path       : 310
+pending_favs   : 277
+pending_total  : 1021
+variable_paths : 2
+bitmap_cvg     : 16.92%
+unique_crashes : 495
+unique_hangs   : 53
+last_path      : 1438196230
+last_crash     : 1438196267
+last_hang      : 1438195851
+exec_timeout   : 40
+afl_banner     : avian
+afl_version    : 1.84b
+command_line   : /home/jwarner/Downloads/afl-1.84b/afl-fuzz -i testcases/ -o findings/ build/linux-x86_64/avian -jar @@

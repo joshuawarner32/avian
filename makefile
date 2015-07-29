@@ -391,8 +391,8 @@ ifeq ($(use-clang),true)
 	build-cxx = clang++ -std=c++11
 	build-cc = clang
 else
-	build-cxx = /Users/jwarner/Downloads/afl-1.84b/afl-clang++
-	build-cc = /Users/jwarner/Downloads/afl-1.84b/afl-clang
+	build-cxx = /home/jwarner/Downloads/afl-1.84b/afl-g++
+	build-cc = /home/jwarner/Downloads/afl-1.84b/afl-gcc
 endif
 
 mflag =
