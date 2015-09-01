@@ -1,0 +1,83 @@
+diff --git bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/build.sh bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/build.sh
+index 2e0d257..55f9950 100644
+--- bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/build.sh	
++++ bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/build.sh	
+@@ -24,7 +24,7 @@ if [ "x${MODEL}" = "xx86_64" ]; then
+ 		export XULRUNNER_LIBS="${XULRUNNER_SDK}/lib/libxpcomglue.a"
+ 	fi
+ else
+-	export ARCHS="-arch i386 -arch ppc"
++	export ARCHS="-arch i386"
+ 	if [ "x${OUTPUT_DIR}" = "x" ]; then
+ 		export OUTPUT_DIR=../../../org.eclipse.swt.cocoa.macosx
+ 	fi
+diff --git bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/make_macosx.mak bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/make_macosx.mak
+index 3173424..4debd42 100644
+--- bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/make_macosx.mak	
++++ bundles/org.eclipse.swt/Eclipse SWT PI/cocoa/library/make_macosx.mak	
+@@ -35,7 +35,7 @@ CFLAGS = -c -xobjective-c -Wall $(ARCHS) -DSWT_VERSION=$(SWT_VERSION) $(NATIVE_S
+ 	-I /System/Library/Frameworks/JavaVM.framework/Headers \
+ 	-I /System/Library/Frameworks/Cocoa.framework/Headers \
+ 	-I /System/Library/Frameworks/JavaScriptCore.framework/Headers
+-LFLAGS = -bundle $(ARCHS) -framework JavaVM -framework Cocoa -framework WebKit -framework CoreServices -framework JavaScriptCore -framework Security -framework SecurityInterface
++LFLAGS = -bundle $(ARCHS) -framework Cocoa -framework WebKit -framework CoreServices -framework JavaScriptCore -framework Security -framework SecurityInterface
+ SWT_OBJECTS = swt.o c.o c_stats.o callback.o
+ SWTPI_OBJECTS = swt.o os.o os_structs.o os_stats.o os_custom.o
+ XULRUNNER_OBJECTS = swt.o xpcom.o xpcom_custom.o xpcom_structs.o xpcom_stats.o xpcominit.o xpcominit_structs.o xpcominit_stats.o
+@@ -44,13 +44,13 @@ XULRUNNERCFLAGS = -c -Wall $(ARCHS) -DSWT_VERSION=$(SWT_VERSION) $(NATIVE_STATS)
+ 	-Wno-non-virtual-dtor -include ${XULRUNNER_SDK}/include/mozilla-config.h -I${XULRUNNER_SDK}/include 
+ XULRUNNERLFLAGS = $(LFLAGS)
+ 
+-all: $(SWT_LIB) $(SWTPI_LIB) $(AWT_LIB) $(XULRUNNER_LIB)
++all: $(SWT_LIB) $(SWTPI_LIB)
+ 
+ .c.o:
+ 	cc $(CFLAGS) $*.c
+ 
+ $(AWT_LIB): $(AWT_OBJECTS)
+-	cc -o $(AWT_LIB) $(LFLAGS) $(AWT_OBJECTS)
++	cc -o $(AWT_LIB) $(LFLAGS) -framework JavaVM $(AWT_OBJECTS)
+ 
+ $(SWT_LIB): $(SWT_OBJECTS)
+ 	cc -o $(SWT_LIB) $(LFLAGS) $(SWT_OBJECTS)
+@@ -59,7 +59,7 @@ $(SWTPI_LIB): $(SWTPI_OBJECTS)
+ 	cc -o $(SWTPI_LIB) $(LFLAGS) $(SWTPI_OBJECTS)
+ 
+ $(XULRUNNER_LIB): $(XULRUNNER_OBJECTS)
+-	g++ -o $(XULRUNNER_LIB) $(XULRUNNERLFLAGS) $(XULRUNNER_LIBS) $(XULRUNNER_OBJECTS)
++	g++ -o $(XULRUNNER_LIB) $(XULRUNNERLFLAGS) -framework JavaVM $(XULRUNNER_LIBS) $(XULRUNNER_OBJECTS)
+ 
+ xpcom.o: xpcom.cpp
+ 	g++ $(XULRUNNERCFLAGS) xpcom.cpp
+diff --git bundles/org.eclipse.swt/Eclipse SWT/cocoa/org/eclipse/swt/widgets/Display.java bundles/org.eclipse.swt/Eclipse SWT/cocoa/org/eclipse/swt/widgets/Display.java
+index 5bbba9d..fede2ad 100755
+--- bundles/org.eclipse.swt/Eclipse SWT/cocoa/org/eclipse/swt/widgets/Display.java	
++++ bundles/org.eclipse.swt/Eclipse SWT/cocoa/org/eclipse/swt/widgets/Display.java	
+@@ -5037,15 +5037,18 @@ void applicationWillFinishLaunching (int /*long*/ id, int /*long*/ sel, int /*lo
+ 	 */
+ 	NSBundle bundle = NSBundle.bundleWithIdentifier(NSString.stringWith("com.apple.JavaVM"));
+ 	NSDictionary dict = NSDictionary.dictionaryWithObject(applicationDelegate, NSString.stringWith("NSOwner"));
+-	NSString path = bundle.pathForResource(NSString.stringWith("DefaultApp"), NSString.stringWith("nib"), null, languageDisplayName);
+-	if (path == null) path = bundle.pathForResource(NSString.stringWith("DefaultApp"), NSString.stringWith("nib"), null, NSString.stringWith(languageISOValue));
+-	if (path == null) path = bundle.pathForResource(NSString.stringWith("DefaultApp"), NSString.stringWith("nib"));
+-	if (!loaded) loaded = path != null && NSBundle.loadNibFile(path, dict, 0);
+-	if (!loaded) {
+-		NSString resourcePath = bundle.resourcePath();
+-		path = resourcePath != null ? resourcePath.stringByAppendingString(NSString.stringWith("/English.lproj/DefaultApp.nib")) : null;
+-		loaded = path != null && NSBundle.loadNibFile(path, dict, 0);
+-	}
++  NSString path;
++  if (bundle != null) {
++    path = bundle.pathForResource(NSString.stringWith("DefaultApp"), NSString.stringWith("nib"), null, languageDisplayName);
++    if (path == null) path = bundle.pathForResource(NSString.stringWith("DefaultApp"), NSString.stringWith("nib"), null, NSString.stringWith(languageISOValue));
++    if (path == null) path = bundle.pathForResource(NSString.stringWith("DefaultApp"), NSString.stringWith("nib"));
++    if (!loaded) loaded = path != null && NSBundle.loadNibFile(path, dict, 0);
++    if (!loaded) {
++      NSString resourcePath = bundle.resourcePath();
++      path = resourcePath != null ? resourcePath.stringByAppendingString(NSString.stringWith("/English.lproj/DefaultApp.nib")) : null;
++      loaded = path != null && NSBundle.loadNibFile(path, dict, 0);
++    }
++  }
+ 	if (!loaded) {
+ 		path = NSString.stringWith(System.getProperty("java.home") + "/../Resources/English.lproj/DefaultApp.nib");
+ 		loaded = path != null && NSBundle.loadNibFile(path, dict, 0);

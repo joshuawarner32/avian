@@ -1,0 +1,113 @@
+diff --git i/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Display.java w/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Display.java
+index b9c4504..da004ee 100644
+--- i/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Display.java	
++++ w/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Display.java	
+@@ -241,6 +241,7 @@ public class Display extends Device {
+ 	long /*int*/ lastClickHwnd;
+ 	int scrollRemainder, scrollHRemainder;
+ 	int lastKey, lastMouse, lastAscii;
++	KeyState keyStates;
+ 	boolean lastVirtual, lastNull, lastDead;
+ 	byte [] keyboard = new byte [256];
+ 	boolean accelKeyHit, mnemonicKeyHit;
+@@ -5145,4 +5146,27 @@ static char [] withCrLf (char [] string) {
+ 	return result;
+ }
+ 
++static class KeyState {
++	public final long /*int*/ wParam;
++	public final int lastKey;
++	public final int lastAscii;
++	public final boolean lastVirtual;
++	public final boolean lastNull;
++	public final boolean lastDead;
++	public KeyState next;
++
++	public KeyState(long /*int*/ wParam, int lastKey, int lastAscii,
++			boolean lastVirtual, boolean lastNull,
++			boolean lastDead, KeyState next)
++	{
++		this.wParam = wParam;
++		this.lastKey = lastKey;
++		this.lastAscii = lastAscii;
++		this.lastVirtual = lastVirtual;
++		this.lastNull = lastNull;
++		this.lastDead = lastDead;
++		this.next = next;
++	}
++}
++
+ }
+diff --git i/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Widget.java w/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Widget.java
+index d968047..da9f548 100644
+--- i/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Widget.java	
++++ w/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Widget.java	
+@@ -1592,8 +1592,28 @@ LRESULT wmIMEChar (long /*int*/ hwnd, long /*int*/ wParam, long /*int*/ lParam)
+ 	return LRESULT.ONE;
+ }
+ 
++private void addKeyState(long /*int*/ wParam) {
++	for (Display.KeyState s = display.keyStates; s != null; s = s.next) {
++		if (s.wParam == wParam) {
++			return;
++		}
++	}
++
++	display.keyStates = new Display.KeyState(
++		wParam, display.lastKey, display.lastAscii,
++		display.lastVirtual, display.lastNull, display.lastDead,
++		display.keyStates);
++}
++
+ LRESULT wmKeyDown (long /*int*/ hwnd, long /*int*/ wParam, long /*int*/ lParam) {
+-	
++	LRESULT result = wmKeyDown2(hwnd, wParam, lParam);
++
++	addKeyState(wParam);
++
++	return result;
++}
++
++private LRESULT wmKeyDown2 (long /*int*/ hwnd, long /*int*/ wParam, long /*int*/ lParam) {
+ 	/* Ignore repeating modifier keys by testing key down state */
+ 	switch ((int)/*64*/wParam) {
+ 		case OS.VK_SHIFT:
+@@ -1831,9 +1851,37 @@ LRESULT wmKeyDown (long /*int*/ hwnd, long /*int*/ wParam, long /*int*/ lParam)
+ 	return null;
+ }
+ 
++private Display.KeyState removeKeyState(long /*int*/ wParam) {
++	Display.KeyState previous = null;
++
++	for (Display.KeyState s = display.keyStates; s != null; s = s.next) {
++		if (s.wParam == wParam) {
++			if (previous != null) {
++				previous.next = s.next;
++			}
++
++			return s;
++		} else {
++			previous = s;
++		}
++	}
++
++	return null;
++}
++
+ LRESULT wmKeyUp (long /*int*/ hwnd, long /*int*/ wParam, long /*int*/ lParam) {
+ 	Display display = this.display;
+-	
++
++	Display.KeyState s = removeKeyState(wParam);
++
++	if (s != null) {
++		display.lastKey = s.lastKey;
++		display.lastAscii = s.lastAscii;
++		display.lastVirtual = s.lastVirtual;
++		display.lastNull = s.lastNull;
++		display.lastDead = s.lastDead;
++	}
++
+ 	/* Check for hardware keys */
+ 	if (OS.IsWinCE) {
+ 		if (OS.VK_APP1 <= wParam && wParam <= OS.VK_APP6) {
