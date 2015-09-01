@@ -660,6 +660,13 @@ unsigned invokeNative(Thread* t, GcMethod* method)
   }
 }
 
+void logCall(const char* type, GcMethod* method) {
+  const char* class_ = (method && method->class_() && method->class_()->name()) ? reinterpret_cast<char*>(method->class_()->name()->body().begin()) : "(null)";
+  const char* name = (method && method->name()) ? reinterpret_cast<char*>(method->name()->body().begin()) : "(null)";
+  const char* spec = (method && method->spec()) ? reinterpret_cast<char*>(method->spec()->body().begin()) : "(null)";
+  printf("%s %s %s %s\n", type, class_, name, spec);
+}
+
 inline void store(Thread* t, unsigned index)
 {
   memcpy(t->stack + ((frameBase(t, t->frame) + index) * 2),
@@ -2020,6 +2027,7 @@ loop:
     if (LIKELY(peekObject(t, sp - parameterFootprint))) {
       method = findInterfaceMethod(
           t, m, objectClass(t, peekObject(t, sp - parameterFootprint)));
+      logCall("invokeinterface", method);
       goto invoke;
     } else {
       exception = makeThrowable(t, GcNullPointerException::Type);
@@ -2047,6 +2055,7 @@ loop:
       } else {
         method = m;
       }
+      logCall("invokespecial", method);
 
       goto invoke;
     } else {
@@ -2064,6 +2073,8 @@ loop:
 
     initClass(t, m->class_());
 
+    logCall("invokestatic", m);
+
     method = m;
   }
     goto invoke;
@@ -2080,6 +2091,7 @@ loop:
       PROTECT(t, class_);
 
       method = findVirtualMethod(t, m, class_);
+      logCall("invokevirtual", method);
       goto invoke;
     } else {
       exception = makeThrowable(t, GcNullPointerException::Type);
