@@ -911,6 +911,13 @@ loop:
 
   case areturn: {
     object result = popObject(t);
+    {
+      GcMethod* m = frameMethod(t, frame);
+      const char* class_ = (m && m->class_() && m->class_()->name()) ? reinterpret_cast<char*>(m->class_()->name()->body().begin()) : "(null)";
+      const char* name = (m && m->name()) ? reinterpret_cast<char*>(m->name()->body().begin()) : "(null)";
+      const char* spec = (m && m->spec()) ? reinterpret_cast<char*>(m->spec()->body().begin()) : "(null)";
+      printf("%s %s %s returned %p\n", class_, name, spec, result);
+    }
     if (frame > base) {
       popFrame(t);
       pushObject(t, result);
@@ -2124,6 +2131,13 @@ loop:
   case ireturn:
   case freturn: {
     int32_t result = popInt(t);
+    {
+      GcMethod* m = frameMethod(t, frame);
+      const char* class_ = (m && m->class_() && m->class_()->name()) ? reinterpret_cast<char*>(m->class_()->name()->body().begin()) : "(null)";
+      const char* name = (m && m->name()) ? reinterpret_cast<char*>(m->name()->body().begin()) : "(null)";
+      const char* spec = (m && m->spec()) ? reinterpret_cast<char*>(m->spec()->body().begin()) : "(null)";
+      printf("%s %s %s returned %d\n", class_, name, spec, result);
+    }
     if (frame > base) {
       popFrame(t);
       pushInt(t, result);
@@ -2471,6 +2485,13 @@ loop:
   case lreturn:
   case dreturn: {
     int64_t result = popLong(t);
+    {
+      GcMethod* m = frameMethod(t, frame);
+      const char* class_ = (m && m->class_() && m->class_()->name()) ? reinterpret_cast<char*>(m->class_()->name()->body().begin()) : "(null)";
+      const char* name = (m && m->name()) ? reinterpret_cast<char*>(m->name()->body().begin()) : "(null)";
+      const char* spec = (m && m->spec()) ? reinterpret_cast<char*>(m->spec()->body().begin()) : "(null)";
+      printf("%s %s %s returned %lld\n", class_, name, spec, result);
+    }
     if (frame > base) {
       popFrame(t);
       pushLong(t, result);
