@@ -8839,6 +8839,7 @@ class MyProcessor : public Processor {
                              object this_,
                              object arguments)
   {
+    printf("invokeArray 1: %s %s\n", method->class_()->name()->body().begin(), method->name()->body().begin())
     assertT(t, t->exception == 0);
 
     assertT(
@@ -8877,6 +8878,7 @@ class MyProcessor : public Processor {
                              object this_,
                              const jvalue* arguments)
   {
+    printf("invokeArray 2: %s %s\n", method->class_()->name()->body().begin(), method->name()->body().begin())
     assertT(t, t->exception == 0);
 
     assertT(
@@ -8916,6 +8918,7 @@ class MyProcessor : public Processor {
                             bool indirectObjects,
                             va_list arguments)
   {
+    printf("invokeList 1: %s %s\n", method->class_()->name()->body().begin(), method->name()->body().begin())
     assertT(t, t->exception == 0);
 
     assertT(
@@ -8958,6 +8961,7 @@ class MyProcessor : public Processor {
                             object this_,
                             va_list arguments)
   {
+    printf("invokeList 2: %s %s %s\n", className, methodName, methodSpec);
     assertT(t, t->exception == 0);
 
     assertT(
