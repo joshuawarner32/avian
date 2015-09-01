@@ -133,7 +133,7 @@ shared = -shared
 
 pointer-size = 8
 
-common-cflags = $(boot-cflags) -Wextra -Werror -Wunused-parameter -Winit-self \
+common-cflags = $(boot-cflags) -Wextra -Werror -Wno-unused-parameter -Winit-self \
 	-I"$(JAVA_HOME)/include" \
 	-fno-rtti -fno-exceptions \
 	-D__STDC_LIMIT_MACROS -D_JNI_IMPLEMENTATION_ -DMAIN_CLASS=\"$(main-class)\"
@@ -142,7 +142,7 @@ cflags = $(common-cflags) \
 	-I"$(JAVA_HOME)/include/linux" \
 	-fvisibility=hidden -fPIC
 
-common-lflags = -lz -lm $(classpath-lflags)
+common-lflags = -lz -lm -framework AppKit $(classpath-lflags)
 
 lflags = $(common-lflags) -rdynamic -lpthread -ldl
 
@@ -279,12 +279,12 @@ endif
 
 cflags += $(opt)
 
-cpp-objects = $(foreach x,$(1),$(patsubst $(2)/%.cpp,$(3)/%.o,$(x)))
+cpp-objects = $(foreach x,$(1),$(patsubst $(2)/%,$(3)/%.o,$(x)))
 java-classes = $(foreach x,$(1),$(patsubst $(2)/%.java,$(3)/%.class,$(x)))
 
 classes = $(call java-classes,$(sources),$(source-directory),$(stage1))
 
-cpps = $(src)/main.cpp
+cpps = $(src)/main.cpp $(src)/objc.m
 objects = $(call cpp-objects,$(cpps),$(src),$(bld))
 
 jar-object = $(bld)/jar.o
@@ -370,7 +370,7 @@ $(jar-object): $(bld)/boot.jar
 	$(converter) $(<) $(@) _binary_boot_jar_start \
 		_binary_boot_jar_end $(platform) $(arch)
 
-$(bld)/%.o: $(src)/%.cpp
+$(bld)/%.o: $(src)/%
 	@mkdir -p $(dir $(@))
 	$(cxx) $(cflags) -c $(<) -o $(@)
 

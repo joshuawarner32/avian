@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.*;
 public class HelloWorld1 {
 
 public static void main (String [] args) {
+	nsAppRun();
 	Display display = new Display ();
 	Shell shell = new HelloWorld1 ().open (display);
 	while (!shell.isDisposed ()) {
@@ -33,4 +34,6 @@ public Shell open (Display display) {
 	shell.open ();
 	return shell;
 }
+
+public static native void nsAppRun();
 }
