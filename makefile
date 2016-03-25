@@ -69,8 +69,8 @@ ifeq ($(filter compile interpret,$(process)),)
 	x := $(error "'$(process)' is not a valid process (choose one of: compile interpret)")
 endif
 
-ifeq ($(filter x86_64 i386 arm arm64,$(arch)),)
-	x := $(error "'$(arch)' is not a supported architecture (choose one of: x86_64 i386 arm arm64)")
+ifeq ($(filter x86_64 i386 arm arm64 wasm32,$(arch)),)
+	x := $(error "'$(arch)' is not a supported architecture (choose one of: x86_64 i386 arm arm64 wasm32)")
 endif
 
 ifeq ($(platform),darwin)
@@ -81,8 +81,23 @@ ifneq ($(ios),)
 	x := $(error "please use 'platform=ios' instead of 'ios=true'")
 endif
 
-ifeq ($(filter linux windows macosx ios freebsd,$(platform)),)
-	x := $(error "'$(platform)' is not a supported platform (choose one of: linux windows macosx ios freebsd)")
+ifeq ($(platform),web)
+	ifneq ($(arch),wasm32)
+		x := $(error "please use 'platform=web arch=wasm32 process=interpret' to build for WebAssembly")
+	endif
+	ifneq ($(process),interpret)
+		x := $(error "please use 'platform=web arch=wasm32 process=interpret' to build for WebAssembly")
+	endif
+endif
+
+ifeq ($(platform),wasm32)
+	ifneq ($(arch),web)
+		x := $(error "please use 'platform=web arch=wasm32 process=interpret' to build for WebAssembly")
+	endif
+endif
+
+ifeq ($(filter linux windows macosx ios freebsd web,$(platform)),)
+	x := $(error "'$(platform)' is not a supported platform (choose one of: linux windows macosx ios freebsd web)")
 endif
 
 ifeq ($(platform),macosx)
@@ -1663,7 +1678,7 @@ test-flags = -Djava.library.path=$(build) \
 
 test-args = $(test-flags) $(input)
 
-ifneq ($(filter linux windows macosx,$(platform)),)
+ifneq ($(filter linux windows macosx web,$(platform)),)
 eclipse-exec-env = eclipse-ee
 eclipse-jdk-dir = $(build)/eclipse/jdk
 eclipse-ee-file = $(eclipse-jdk-dir)/avian.ee
