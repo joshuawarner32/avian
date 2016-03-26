@@ -911,6 +911,15 @@ ifeq ($(kernel),darwin)
 	cflags += -I$(JAVA_HOME)/include/darwin
 endif
 
+ifeq ($(platform),web)
+	ifeq ($(build-platform),macosx)
+		cflags += -I$(JAVA_HOME)/include/darwin
+	else
+		cflags += -I$(JAVA_HOME)/include/$(build-platform)
+	endif
+	target-format = wasm
+endif
+
 openjdk-extra-cflags += $(classpath-extra-cflags)
 
 find-tool = $(shell if ( command -v "$(1)$(2)" >/dev/null ); then (echo "$(1)$(2)") else (echo "$(2)"); fi)
@@ -1310,7 +1319,9 @@ vm-sources = \
 	$(src)/process.cpp \
 	$(src)/heapdump.cpp
 
-vm-asm-sources = $(src)/$(arch).$(asm-format)
+ifneq ($(platform),web)
+	vm-asm-sources = $(src)/$(arch).$(asm-format)
+endif
 
 target-asm = $(asm)
 
@@ -1658,6 +1669,10 @@ ifeq ($(target-arch),arm64)
 	cflags += -DAVIAN_TARGET_ARCH=AVIAN_ARCH_ARM64
 endif
 
+ifeq ($(target-arch),wasm32)
+	cflags += -DAVIAN_TARGET_ARCH=AVIAN_ARCH_WASM32
+endif
+
 ifeq ($(target-format),elf)
 	cflags += -DAVIAN_TARGET_FORMAT=AVIAN_FORMAT_ELF
 endif
@@ -1668,6 +1683,10 @@ endif
 
 ifeq ($(target-format),macho)
 	cflags += -DAVIAN_TARGET_FORMAT=AVIAN_FORMAT_MACHO
+endif
+
+ifeq ($(target-format),wasm)
+	cflags += -DAVIAN_TARGET_FORMAT=AVIAN_FORMAT_WASM
 endif
 
 class-name = $(patsubst $(1)/%.class,%,$(2))

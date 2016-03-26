@@ -11,6 +11,7 @@
 #ifndef AVIAN_TOOLS_H_
 #define AVIAN_TOOLS_H_
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <avian/util/string.h>
@@ -111,6 +112,7 @@ class PlatformInfo {
     Elf = AVIAN_FORMAT_ELF,
     Pe = AVIAN_FORMAT_PE,
     MachO = AVIAN_FORMAT_MACHO,
+    Wasm = AVIAN_FORMAT_WASM,
     UnknownFormat = AVIAN_FORMAT_UNKNOWN
   };
 
@@ -119,6 +121,7 @@ class PlatformInfo {
     x86_64 = AVIAN_ARCH_X86_64,
     Arm = AVIAN_ARCH_ARM,
     Arm64 = AVIAN_ARCH_ARM64,
+    Wasm32 = AVIAN_ARCH_WASM32,
     UnknownArch = AVIAN_ARCH_UNKNOWN
   };
 

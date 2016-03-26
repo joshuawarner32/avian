@@ -23,11 +23,13 @@
 #define AVIAN_FORMAT_ELF 1
 #define AVIAN_FORMAT_PE 2
 #define AVIAN_FORMAT_MACHO 3
+#define AVIAN_FORMAT_WASM 3
 
 #define AVIAN_ARCH_UNKNOWN 0
 #define AVIAN_ARCH_X86 (1 << 8)
 #define AVIAN_ARCH_X86_64 (2 << 8)
 #define AVIAN_ARCH_ARM (3 << 8)
 #define AVIAN_ARCH_ARM64 (4 << 8)
+#define AVIAN_ARCH_WASM32 (5 << 8)
 
 #endif

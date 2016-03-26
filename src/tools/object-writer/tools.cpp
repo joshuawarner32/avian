@@ -102,6 +102,8 @@ PlatformInfo::Format PlatformInfo::formatFromString(const char* format)
   } else if (strcmp(format, "macho") == 0 || strcmp(format, "darwin") == 0
              || strcmp(format, "ios") == 0 || strcmp(format, "macosx") == 0) {
     return MachO;
+  } else if (strcmp(format, "wasm") == 0) {
+    return Wasm;
   } else {
     return UnknownFormat;
   }
@@ -117,6 +119,8 @@ PlatformInfo::Architecture PlatformInfo::archFromString(const char* arch)
     return Architecture::Arm;
   } else if (strcmp(arch, "arm64") == 0) {
     return Architecture::Arm64;
+} else if (strcmp(arch, "wasm32") == 0) {
+    return Architecture::Wasm32;
   } else {
     return Architecture::UnknownArch;
   }
