@@ -918,6 +918,10 @@ ifeq ($(platform),web)
 		cflags += -I$(JAVA_HOME)/include/$(build-platform)
 	endif
 	target-format = wasm
+	cc = emcc
+	cxx = em++
+	ld = emcc
+	system = web
 endif
 
 openjdk-extra-cflags += $(classpath-extra-cflags)

@@ -118,6 +118,8 @@ typedef intptr_t intptr_alias_t;
 #define ARCH_arm
 #elif defined __aarch64__
 #define ARCH_arm64
+#elif defined __asmjs__
+#define ARCH_wasm32
 #else
 #error "unsupported architecture"
 #endif

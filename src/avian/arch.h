@@ -45,6 +45,8 @@ inline void compileTimeMemoryBarrier()
 #include "x86.h"
 #elif (defined ARCH_arm) || (defined ARCH_arm64)
 #include "arm.h"
+#elif (defined ARCH_wasm32)
+#include "wasm.h"
 #else
 #error unsupported architecture
 #endif

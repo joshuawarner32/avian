@@ -370,6 +370,9 @@ class JarIndex {
       } break;
 
       case Deflated: {
+        #ifdef __asmjs__
+        abort();
+        #else
         DataRegion* region = new (
             allocator->allocate(sizeof(DataRegion) + uncompressedSize(p)))
             DataRegion(s, allocator, uncompressedSize(p));
@@ -393,6 +396,7 @@ class JarIndex {
         inflateEnd(&zStream);
 
         return region;
+        #endif
       } break;
 
       default:

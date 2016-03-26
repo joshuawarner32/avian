@@ -18,6 +18,8 @@
 #include "fcntl.h"
 #include "ctype.h"
 
+#include "avian/common.h"
+
 // Make sure M_* constants (in particular M_E) are exposed in math.h.
 // This was a problem on the default mingw install on ubuntu precise
 #undef __STRICT_ANSI__
@@ -855,6 +857,9 @@ extern "C" JNIEXPORT jobjectArray JNICALL
 
 #elif defined ARCH_arm64
   e->SetObjectArrayElement(array, index++, e->NewStringUTF("os.arch=arm64"));
+
+#elif defined ARCH_wasm32
+  e->SetObjectArrayElement(array, index++, e->NewStringUTF("os.arch=wasm32"));
 
 #else
 #error "unknown architecture"

@@ -8,6 +8,7 @@
    There is NO WARRANTY for this software.  See license.txt for
    details. */
 
+#ifndef __asmjs__
 #include "zlib.h"
 
 #ifdef inflateInit2
@@ -28,4 +29,5 @@
                 Z_DEFAULT_STRATEGY,           \
                 ZLIB_VERSION,                 \
                 static_cast<int>(sizeof(z_stream)))
+#endif
 #endif

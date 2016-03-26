@@ -15,6 +15,8 @@
 #include "jni.h"
 #include "jni-util.h"
 
+#ifndef __asmjs__
+
 extern "C" JNIEXPORT jlong JNICALL
     Java_java_util_zip_Inflater_make(JNIEnv* e, jclass, jboolean nowrap)
 {
@@ -170,3 +172,5 @@ extern "C" JNIEXPORT void JNICALL
 
   e->SetIntArrayRegion(results, 0, 3, resultArray);
 }
+
+#endif
