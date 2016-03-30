@@ -41,17 +41,15 @@ class MutexResource {
 };
 
 class MySystem;
-MySystem* globalSystem;
+// MySystem* globalSystem;
 
-void* run(void* r)
-{
-  static_cast<System::Runnable*>(r)->run();
-  return 0;
-}
+// void* run(void* r)
+// {
+//   static_cast<System::Runnable*>(r)->run();
+//   return 0;
+// }
 
 // const bool Verbose = false;
-
-const unsigned Notified = 1 << 0;
 
 class MySystem : public System {
  public:
@@ -118,7 +116,7 @@ class MySystem : public System {
       ::abort();
     }
 
-    virtual bool waitAndClearInterrupted(System::Thread* context, int64_t time UNUSED)
+    virtual bool waitAndClearInterrupted(System::Thread* context UNUSED, int64_t time UNUSED)
     {
       ::abort();
     }
@@ -151,7 +149,7 @@ class MySystem : public System {
       ::abort();
     }
 
-    virtual void set(void* p)
+    virtual void set(void* p UNUSED)
     {
       ::abort();
     }
@@ -195,7 +193,7 @@ class MySystem : public System {
 
   class Library : public System::Library {
    public:
-    virtual void* resolve(const char* function)
+    virtual void* resolve(const char* function UNUSED)
     {
       ::abort();
     }
@@ -210,7 +208,7 @@ class MySystem : public System {
       ::abort();
     }
 
-    virtual void setNext(System::Library* lib)
+    virtual void setNext(System::Library* lib UNUSED)
     {
       ::abort();
     }
@@ -276,23 +274,23 @@ class MySystem : public System {
   }
 
   virtual Status visit(System::Thread* st UNUSED,
-                       System::Thread* sTarget,
-                       ThreadVisitor* visitor)
+                       System::Thread* sTarget UNUSED,
+                       ThreadVisitor* visitor UNUSED)
   {
     ::abort();
   }
 
-  virtual Status map(System::Region** region, const char* name)
+  virtual Status map(System::Region** region UNUSED, const char* name UNUSED)
   {
     ::abort();
   }
 
-  virtual Status open(System::Directory** directory, const char* name)
+  virtual Status open(System::Directory** directory UNUSED, const char* name UNUSED)
   {
     ::abort();
   }
 
-  virtual FileType stat(const char* name, size_t* length)
+  virtual FileType stat(const char* name UNUSED, size_t* length UNUSED)
   {
     ::abort();
   }
@@ -307,12 +305,12 @@ class MySystem : public System {
     ::abort();
   }
 
-  virtual const char* toAbsolutePath(AllocOnly* allocator, const char* name)
+  virtual const char* toAbsolutePath(AllocOnly* allocator UNUSED, const char* name UNUSED)
   {
     ::abort();
   }
 
-  virtual Status load(System::Library** lib, const char* name)
+  virtual Status load(System::Library** lib UNUSED, const char* name UNUSED)
   {
     ::abort();
   }

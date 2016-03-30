@@ -58,7 +58,9 @@ inline bool atomicCompareAndSwap32(uint32_t* p, uint32_t old, uint32_t new_)
 {
   if(*p == old) {
     *p = new_;
+    return true;
   }
+  return false;
 }
 
 inline bool atomicCompareAndSwap(uintptr_t* p, uintptr_t old, uintptr_t new_)
@@ -66,28 +68,28 @@ inline bool atomicCompareAndSwap(uintptr_t* p, uintptr_t old, uintptr_t new_)
   return atomicCompareAndSwap32(reinterpret_cast<uint32_t*>(p), old, new_);
 }
 
-inline void advance(unsigned* stackIndex,
-                    unsigned* stackSubIndex,
-                    unsigned newStackSubIndex)
+inline void advance(unsigned* stackIndex UNUSED,
+                    unsigned* stackSubIndex UNUSED,
+                    unsigned newStackSubIndex UNUSED)
 {
   abort();
 }
 
-inline void push(uint8_t type,
-                 uintptr_t* stack,
-                 unsigned* stackIndex,
-                 unsigned* stackSubIndex,
-                 uintptr_t argument)
+inline void push(uint8_t type UNUSED,
+                 uintptr_t* stack UNUSED,
+                 unsigned* stackIndex UNUSED,
+                 unsigned* stackSubIndex UNUSED,
+                 uintptr_t argument UNUSED)
 {
   abort();
 }
 
-inline uint64_t dynamicCall(void* function,
-                            uintptr_t* arguments,
-                            uint8_t* argumentTypes,
-                            unsigned argumentCount,
+inline uint64_t dynamicCall(void* function UNUSED,
+                            uintptr_t* arguments UNUSED,
+                            uint8_t* argumentTypes UNUSED,
+                            unsigned argumentCount UNUSED,
                             unsigned argumentsSize UNUSED,
-                            unsigned returnType)
+                            unsigned returnType UNUSED)
 {
   abort();
 }
