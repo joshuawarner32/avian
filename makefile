@@ -930,6 +930,7 @@ ifeq ($(platform),web)
 	cxx = em++
 	ld = emcc
 	system = web
+	exe-suffix = .js
 endif
 
 openjdk-extra-cflags += $(classpath-extra-cflags)
