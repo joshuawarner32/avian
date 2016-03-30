@@ -515,7 +515,11 @@ converter-cflags = -D__STDC_CONSTANT_MACROS -std=c++0x -Iinclude/ -Isrc/ \
 
 cflags = $(build-cflags)
 
-common-lflags = -lm -lz
+common-lflags = -lm
+
+ifneq ($(platform),web)
+ common-lflags += -lz
+endif
 
 ifeq ($(use-clang),true)
 	ifeq ($(build-kernel),darwin)
@@ -531,7 +535,11 @@ endif
 
 build-lflags = -lz -lpthread -ldl
 
-lflags = $(common-lflags) -lpthread -ldl
+lflags = $(common-lflags)
+
+ifneq ($(platform),web)
+	lflags += -lpthread -ldl
+endif
 
 build-system = posix
 
@@ -1427,9 +1435,14 @@ ifeq ($(bootimage),true)
 	vm-classpath-objects = $(bootimage-object) $(codeimage-object)
 	cflags += -DBOOT_IMAGE -DAVIAN_CLASSPATH=\"\"
 else
-	vm-classpath-objects = $(classpath-object)
-	cflags += -DBOOT_CLASSPATH=\"[classpathJar]\" \
-		-DAVIAN_CLASSPATH=\"[classpathJar]\"
+	ifneq ($(platform),web)
+		vm-classpath-objects = $(classpath-object)
+		cflags += -DBOOT_CLASSPATH=\"[classpathJar]\" \
+			-DAVIAN_CLASSPATH=\"[classpathJar]\"
+	else
+		cflags += -DBOOT_CLASSPATH=nullptr \
+			-DAVIAN_CLASSPATH=nullptr
+	endif
 endif
 
 cflags += $(extra-cflags)
@@ -1723,6 +1736,10 @@ eclipse-exec-env =
 endif
 
 .PHONY: build
+ifeq ($(platform),web)
+build: $(static-library) $(executable) $(classpath-dep) \
+	$(build)/classpath.jar $(eclipse-exec-env)
+else
 ifneq ($(supports_avian_executable),false)
 build: $(static-library) $(executable) $(dynamic-library) $(lzma-library) \
 	$(lzma-encoder) $(executable-dynamic) $(classpath-dep) $(test-dep) \
@@ -1731,6 +1748,7 @@ else
 build: $(static-library) $(dynamic-library) $(lzma-library) \
 	$(lzma-encoder) $(classpath-dep) $(test-dep) \
 	$(test-extra-dep) $(embed) $(build)/classpath.jar
+endif
 endif
 
 $(test-dep): $(classpath-dep)
