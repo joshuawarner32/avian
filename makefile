@@ -1418,7 +1418,7 @@ ifneq ($(mode),fast)
 	host-vm-options := -$(mode)
 endif
 
-host-vm = build/$(build-platform)-$(build-arch)-interpret$(host-vm-options)/libjvm$(so-suffix)
+host-vm = build/$(build-platform)-$(build-arch)-interpret$(host-vm-options)/$(so-prefix)jvm$(so-suffix)
 
 bootimage-object = $(build)/bootimage-bin.o
 codeimage-object = $(build)/codeimage-bin.o
